@@ -122,14 +122,14 @@ Pannes techniques.
 
 ### **Ressources en temps (estimations)**
 
-- Analyse du besoin : **XX heures**
-- Conception (diagrammes, architecture simple) : **XX heures**
-- Développement backend (récupération capteurs + API) : **XX heures**
-- Développement frontend (tableau de bord + alertes) : **XX heures**
-- Tests (techniques + utilisation) : **XX heures**
-- Documentation (guide, web summary, journal de travail) : **XX heures**
+- Analyse du besoin : **3 heures**
+- Conception (diagrammes, architecture simple) : **6 heures**
+- Développement backend (récupération capteurs + API) : **18 heures**
+- Développement frontend (tableau de bord + alertes) : **10 heures**
+- Tests (techniques + utilisation) : **6 heures**
+- Documentation (guide, web summary, journal de travail) : **En continu**
 
-**Total estimé : XX heures de travail**
+**Total estimé : 43 heures de travail**
 
 ### **Ressources matérielles**
 
@@ -175,8 +175,10 @@ Pannes techniques.
 
 ## Décision GO / NOGO
 
-Conclus avec une recommandation : le projet doit-il être lancé ? Justifie la décision avec les éléments précédents.
-
-**Recommandation:** [GO / NOGO]
+**Recommandation:** **GO**
 
 **Justification:**
+
+Le projet présente un excellent équilibre entre bénéfices concrets (réduction de 30% des interventions réactives, amélioration du confort en classe) et faisabilité technique démontrée (capteurs Phidget identifiés, technologies web accessibles, budget de 43 heures raisonnable). Les parties prenantes sont impliquées et motivées, avec un besoin réel exprimé par l'intendance et la direction.
+
+Tous les risques identifiés (techniques, humains, organisationnels) disposent de stratégies d'atténuation claires, et le projet respecte parfaitement le cadre pédagogique du Module 306 avec tous les livrables obligatoires prévus. Le lancement est recommandé.
