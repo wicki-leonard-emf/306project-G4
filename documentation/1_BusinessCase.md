@@ -64,32 +64,39 @@ Les objectifs suivants respectent le cadre SMART (Spécifique, Mesurable, Atteig
 
 ## Bénéfices attendus
 
-Explique les avantages que le projet apportera une fois terminé (gains de temps, amélioration de qualité, satisfaction client, etc.).
+Les principaux bénéfices attendus sont une meilleure qualité des conditions d’apprentissage grâce au suivi en temps réel de la température et de l’humidité, et une réduction des situations extrêmes grâce aux alertes ciblées. Les responsables gagne du temps en limitant la surveillance manuelle et les déplacements inutiles, tout en pouvant intervenir plus rapidement et de manière plus ciblée
 
 ---
 
 ## Analyse SWOT
 
-Présente une analyse des forces, faiblesses, opportunités et menaces liées au projet. Cela aide à anticiper les risques et à valoriser les atouts.
-
 ### Forces
+
+Suivi en temps réel, alertes automatiques, gain de temps pour les responsables.
 
 ### Faiblesses
 
+Dépendance à la technologie, coûts initiaux d'installation, besoin de formation pour les utilisateurs.
+
 ### Opportunités
 
+Amélioration des conditions d'apprentissage, potentiel d'extension à d'autres environnements.
+
 ### Menaces
+
+Pannes techniques.
 
 ---
 
 ## Parties prenantes
 
-Liste les personnes ou groupes impliqués dans le projet (client, utilisateurs, équipe projet, etc.) et leur rôle.
-
-| Partie prenante | Rôle | Intérêt |
-| --------------- | ---- | ------- |
-
----
+| Partie prenante              | Rôle                                      | Intérêt                                                     |
+|------------------------------|-------------------------------------------|-------------------------------------------------------------|
+| Direction de l’établissement | Pilote du projet                          | Améliorer les conditions d’apprentissage et l’image de l’école |
+| Concierge                    | Suivi des salles, interventions techniques| Gagner du temps, réduire les déplacements inutiles          |
+| Enseignants                  | Utilisateurs du tableau de bord          | Avoir des classes confortables pour enseigner               |
+| Élèves                       | Bénéficiaires indirects                   | Mieux apprendre dans un environnement agréable              |
+| Équipe projet (étudiants)    | Conception et développement de la solution| Réussir le projet, acquérir de l’expérience                 |
 
 ## Risques principaux
 
