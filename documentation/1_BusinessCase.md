@@ -5,6 +5,7 @@
 ### Business case : Gestion des températures dans les classes avec alertes
 
 **Réalisé par :**
+
 - Beer Gabriel
 - Wicki Léonard
 - Dubusc Cyril
@@ -27,6 +28,7 @@ Le projet vise à mettre en place une solution de monitoring utilisant des capte
 **Opportunité :** Grâce à un système de monitoring automatisé avec alertes, il devient possible d'anticiper et de réagir rapidement aux dépassements de seuils, améliorant ainsi le confort des apprenants et l'efficacité opérationnelle du personnel. La solution propose également une consultation rapide et intuitive des données via téléphone mobile ou tablette.
 
 **Valeur ajoutée :**
+
 - Réduction des interventions réactives
 - Amélioration du confort en classe
 - Gain de temps pour l'intendance
@@ -39,21 +41,25 @@ Le projet vise à mettre en place une solution de monitoring utilisant des capte
 Les objectifs suivants respectent le cadre SMART (Spécifique, Mesurable, Atteignable, Réaliste, Temporel) :
 
 ### Objectifs fonctionnels
+
 1. **Développer une application web mobile** accessible depuis un navigateur, affichant en temps réel la température et l'humidité de chaque salle équipée
 2. **Mettre en place un système d'alertes automatisé** envoyant des notifications claires lorsque les seuils prédéfinis sont dépassés (avec indication de la salle concernée)
 3. **Fournir un historique consultable** sur les 7 derniers jours minimum pour chaque salle
 4. **Permettre la configuration des seuils** d'alerte par salle (valeurs hautes et basses) de manière simple
 
 ### Objectifs mesurables (KPI)
+
 - **Ergonomie :** 90% des utilisateurs déclarent que le tableau de bord est "clair" ou "très clair"
 - **Pertinence :** 95% des alertes envoyées sont pertinentes (peu de faux positifs)
 - **Prise en main :** Temps de prise en main ≤ 10 minutes pour un nouvel utilisateur
 - **Efficacité :** Temps médian pour identifier une salle problématique ≤ 30 secondes depuis le tableau de bord
 
 ### Objectifs business
+
 - **Réduire de 30%** les interventions correctives réactives en 3 mois grâce aux alertes ciblées
 - **Diminuer de 25%** les variations extrêmes de température/humidité relevées en classe sur 6 semaines
 - **Limiter à 15 minutes par jour** le temps passé à la surveillance manuelle pour l'intendance
+
 ---
 
 ## Bénéfices attendus
@@ -89,20 +95,21 @@ Liste les personnes ou groupes impliqués dans le projet (client, utilisateurs, 
 
 ### **Risques techniques**
 
-- **Problèmes de connexion des capteurs Phidget\***Atténuation :\* faire des tests techniques tôt dans le projet, vérifier la stabilité du réseau et préparer un plan B (répétition, test sur plusieurs salles).
-- **Données incorrectes ou capteur mal calibré\***Atténuation :\* vérification régulière, recalibrage, test de cohérence des valeurs dans l’application.
-- **Panne ou défaillance d’un capteur\***Atténuation :\* prévoir un capteur de remplacement, système qui signale les capteurs inactifs.
+- **Problèmes de connexion des capteurs Phidget** Atténuation : faire des tests techniques tôt dans le projet, vérifier la stabilité du réseau et préparer un plan B (répétition, test sur plusieurs salles).
+- **Données incorrectes ou capteur mal calibré** Atténuation : vérification régulière, recalibrage, test de cohérence des valeurs dans l’application.
+- **Panne ou défaillance d’un capteur** Atténuation :
+  prévoir un capteur de remplacement, système qui signale les capteurs inactifs.
 
 ### **Risques humains**
 
-- **Utilisateurs qui ne comprennent pas les alertes\***Atténuation :\* messages d’alerte très simples, page d’aide claire, formation rapide (≤10 min).
-- **Mauvaise utilisation ou oubli de l’outil\***Atténuation :\* interface très simple, accès mobile direct, icônes visuelles pour attirer l’attention.
+- **Utilisateurs qui ne comprennent pas les alertes** Atténuation : messages d’alerte très simples, page d’aide claire, formation rapide (≤10 min).
+- **Mauvaise utilisation ou oubli de l’outil** Atténuation :interface très simple, accès mobile direct, icônes visuelles pour attirer l’attention.
 
 ### **Risques organisationnels**
 
-- **Seuils mal définis → trop d’alertes (faux positifs)\***Atténuation :\* définir les seuils avec l’intendance, ajuster après 1–2 semaines d’usage.
-- **Retards dans l’installation ou le déploiement\***Atténuation :\* planning clair, validation du matériel au début, implication du supérieur professionnel.
-- **Pas de responsable désigné pour réagir aux alertes\***Atténuation :\* définir clairement qui reçoit les alertes et qui agit.
+- **Seuils mal définis → trop d’alertes (faux positifs)** Atténuation : définir les seuils avec l’intendance, ajuster après 1–2 semaines d’usage.
+- **Retards dans l’installation ou le déploiement** Atténuation : planning clair, validation du matériel au début, implication du supérieur professionnel.
+- **Pas de responsable désigné pour réagir aux alertes** Atténuation : définir clairement qui reçoit les alertes et qui agit.
 
 ## Budget estimé
 
