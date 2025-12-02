@@ -218,4 +218,23 @@ Matrice des risques identifiés pour le projet, basée sur l'analyse du Business
 
 ## Ressources nécessaires
 
-Liste les ressources humaines (compétences), matérielles (outils, logiciels), et éventuellement financières nécessaires à la réalisation.
+### Ressources humaines
+- Équipe de 3 apprentis CFC en informatique (Beer Gabriel, Wicki Léonard, Dubusc Cyril)
+- Compétences nécessaires : développement web (HTML/CSS/JavaScript), backend, base de données, modélisation UML
+- Encadrement : supérieur professionnel, responsable intendance, direction
+
+### Ressources matérielles
+- 3x capteurs température
+- 3x capteurs humiditée
+- 3x Raspberry pi 
+### Outils et logiciels
+- Enterprise Architect (diagrammes UML)
+- Git + GitHub/GitLab (gestion de version)
+- Environnement de développement (VS Code ou similaire)
+- Base de données (Neon postgress)
+- Hébergeur web (Vercel)
+- Bibliothèques Phidget pour l'intégration des capteurs
+- 
+### Temps estimé
+- Budget total : **43 heures** réparties sur la durée du Module 306
+- Principales phases : analyse (3h), conception (6h), développement backend (8h), développement raspberry pi (4h) développement frontend (10h), tests (6h), documentation (en continu)
