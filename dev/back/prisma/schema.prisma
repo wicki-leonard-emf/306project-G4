@@ -1,0 +1,63 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Modèle Salle de classe
+model Room {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  sensors Sensor[]
+
+  @@map("rooms")
+}
+
+// Modèle Capteur Phidget
+model Sensor {
+  id           String     @id @default(cuid())
+  roomId       String
+  type         SensorType
+  serialNumber String     @unique
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  // Relations
+  room     Room           @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  readings SensorReading[]
+
+  @@index([roomId])
+  @@map("sensors")
+}
+
+enum SensorType {
+  TEMPERATURE
+  HUMIDITY
+}
+
+// Modèle Lecture de capteur
+model SensorReading {
+  id        String   @id @default(cuid())
+  sensorId  String
+  value     Float
+  timestamp DateTime @default(now())
+  createdAt DateTime @default(now())
+
+  // Relations
+  sensor Sensor @relation(fields: [sensorId], references: [id], onDelete: Cascade)
+
+  @@index([sensorId, timestamp(sort: Desc)])
+  @@index([timestamp(sort: Desc)])
+  @@map("sensor_readings")
+}
