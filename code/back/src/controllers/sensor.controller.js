@@ -1,6 +1,127 @@
 import { prisma } from '../models/index.js';
 
 /**
+ * POST /api/sensors
+ * Crée un nouveau capteur
+ * Body: { roomId: string, type: 'TEMPERATURE' | 'HUMIDITY', serialNumber: string }
+ */
+export const createSensor = async (req, res) => {
+  try {
+    const { roomId, type, serialNumber } = req.body;
+
+    // Valider les champs requis
+    if (!roomId || typeof roomId !== 'string') {
+      return res.status(400).json({
+        error: 'roomId requis (string)',
+        code: 'VALIDATION_ERROR'
+      });
+    }
+
+    if (!type || !['TEMPERATURE', 'HUMIDITY'].includes(type)) {
+      return res.status(400).json({
+        error: 'type requis (TEMPERATURE ou HUMIDITY)',
+        code: 'VALIDATION_ERROR'
+      });
+    }
+
+    if (!serialNumber || typeof serialNumber !== 'string') {
+      return res.status(400).json({
+        error: 'serialNumber requis (string)',
+        code: 'VALIDATION_ERROR'
+      });
+    }
+
+    // Vérifier que la salle existe
+    const room = await prisma.room.findUnique({
+      where: { id: roomId }
+    });
+
+    if (!room) {
+      return res.status(404).json({
+        error: `Salle ${roomId} non trouvée`,
+        code: 'ROOM_NOT_FOUND'
+      });
+    }
+
+    // Vérifier que le serialNumber n'existe pas déjà
+    const existingSensor = await prisma.sensor.findUnique({
+      where: { serialNumber }
+    });
+
+    if (existingSensor) {
+      return res.status(409).json({
+        error: `Un capteur avec le serialNumber ${serialNumber} existe déjà`,
+        code: 'SENSOR_ALREADY_EXISTS'
+      });
+    }
+
+    // Créer le capteur
+    const sensor = await prisma.sensor.create({
+      data: {
+        roomId,
+        type,
+        serialNumber
+      }
+    });
+
+    res.status(201).json({
+      success: true,
+      sensor: {
+        id: sensor.id,
+        roomId: sensor.roomId,
+        type: sensor.type,
+        serialNumber: sensor.serialNumber,
+        createdAt: sensor.createdAt
+      }
+    });
+  } catch (error) {
+    console.error('Erreur createSensor:', error);
+    res.status(500).json({ error: 'Erreur lors de la création du capteur' });
+  }
+};
+
+/**
+ * GET /api/sensors
+ * Récupère tous les capteurs
+ */
+export const getSensors = async (req, res) => {
+  try {
+    const sensors = await prisma.sensor.findMany({
+      include: {
+        room: true,
+        readings: {
+          take: 1,
+          orderBy: {
+            timestamp: 'desc'
+          }
+        }
+      }
+    });
+
+    const formattedSensors = sensors.map(sensor => ({
+      id: sensor.id,
+      roomId: sensor.roomId,
+      roomName: sensor.room.name,
+      type: sensor.type,
+      serialNumber: sensor.serialNumber,
+      lastReading: sensor.readings.length > 0 ? {
+        value: sensor.readings[0].value,
+        timestamp: sensor.readings[0].timestamp
+      } : null,
+      createdAt: sensor.createdAt
+    }));
+
+    res.json({
+      success: true,
+      sensors: formattedSensors
+    });
+  } catch (error) {
+    console.error('Erreur getSensors:', error);
+    res.status(500).json({ error: 'Erreur lors de la récupération des capteurs' });
+  }
+};
+
+/**
  * POST /api/sensors/readings
  * Ingère une nouvelle lecture depuis un Raspberry Pi
  * Headers requis: X-API-Key
