@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  phidget-client:
+    image: gabrielbeer15/phidget-client:latest
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - TEMP_SENSOR_ID=${TEMP_SENSOR_ID}
+      - HUMIDITY_SENSOR_ID=${HUMIDITY_SENSOR_ID}
+    network_mode: host
+
+
