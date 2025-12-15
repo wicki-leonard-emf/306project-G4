@@ -1,0 +1,241 @@
+{
+  "info": {
+    "name": "Classroom Monitor API",
+    "description": "API for testing sensor data ingestion and retrieval",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Rooms",
+      "item": [
+        {
+          "name": "Get all rooms",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://sensorhub-three.vercel.app/api/rooms",
+              "protocol": "https",
+              "host": ["sensorhub-three", "vercel", "app"],
+              "path": ["api", "rooms"]
+            },
+            "description": "Retrieves all rooms with their current temperature and humidity values"
+          },
+          "response": []
+        },
+        {
+          "name": "Get room by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://sensorhub-three.vercel.app/api/rooms/cmiyfqjr2000014j0nt7aopm3",
+              "protocol": "https",
+              "host": ["sensorhub-three", "vercel", "app"],
+              "path": ["api", "rooms", "cmiyfqjr2000014j0nt7aopm3"]
+            },
+            "description": "Retrieves details of a specific room with all its sensors"
+          },
+          "response": []
+        },
+        {
+          "name": "Ingest room readings (batch)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "your-api-key-here",
+                "type": "text",
+                "description": "API key for authentication (set in .env as RPI_API_KEY)"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"readings\": [\n    {\n      \"serialNumber\": \"PHIDGET-TEMP-001\",\n      \"value\": 23.5\n    },\n    {\n      \"serialNumber\": \"PHIDGET-HUM-001\",\n      \"value\": 48.2\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "https://sensorhub-three.vercel.app/api/rooms/cmiyfqjr2000014j0nt7aopm3/readings",
+              "protocol": "https",
+              "host": ["sensorhub-three", "vercel", "app"],
+              "path": ["api", "rooms", "cmiyfqjr2000014j0nt7aopm3", "readings"]
+            },
+            "description": "Ingest multiple sensor readings for a room at once"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Sensors",
+      "item": [
+        {
+          "name": "Ingest single sensor reading",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "your-api-key-here",
+                "type": "text",
+                "description": "API key for authentication (set in .env as RPI_API_KEY)"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"serialNumber\": \"PHIDGET-TEMP-001\",\n  \"value\": 22.5\n}"
+            },
+            "url": {
+              "raw": "https://sensorhub-three.vercel.app/api/sensors/readings",
+              "protocol": "https",
+              "host": ["sensorhub-three", "vercel", "app"],
+              "path": ["api", "sensors", "readings"]
+            },
+            "description": "Ingest a single temperature or humidity reading. Requires valid X-API-Key header."
+          },
+          "response": []
+        },
+        {
+          "name": "Test temperature reading",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "your-api-key-here",
+                "type": "text",
+                "description": "API key for authentication"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"serialNumber\": \"PHIDGET-TEMP-001\",\n  \"value\": 20.5\n}"
+            },
+            "url": {
+              "raw": "https://sensorhub-three.vercel.app/api/sensors/readings",
+              "protocol": "https",
+              "host": ["sensorhub-three", "vercel", "app"],
+              "path": ["api", "sensors", "readings"]
+            },
+            "description": "Test temperature sensor reading (valid range: -50 to +100°C)"
+          },
+          "response": []
+        },
+        {
+          "name": "Test humidity reading",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "your-api-key-here",
+                "type": "text",
+                "description": "API key for authentication"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"serialNumber\": \"PHIDGET-HUM-001\",\n  \"value\": 55.0\n}"
+            },
+            "url": {
+              "raw": "https://sensorhub-three.vercel.app/api/sensors/readings",
+              "protocol": "https",
+              "host": ["sensorhub-three", "vercel", "app"],
+              "path": ["api", "sensors", "readings"]
+            },
+            "description": "Test humidity sensor reading (valid range: 0 to 100%)"
+          },
+          "response": []
+        },
+        {
+          "name": "Test missing API key",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"serialNumber\": \"PHIDGET-TEMP-001\",\n  \"value\": 22.5\n}"
+            },
+            "url": {
+              "raw": "https://sensorhub-three.vercel.app/api/sensors/readings",
+              "protocol": "https",
+              "host": ["sensorhub-three", "vercel", "app"],
+              "path": ["api", "sensors", "readings"]
+            },
+            "description": "Test what happens when API key is missing (should return 401)"
+          },
+          "response": []
+        },
+        {
+          "name": "Test invalid API key",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "invalid-key-12345",
+                "type": "text",
+                "description": "Invalid API key"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"serialNumber\": \"PHIDGET-TEMP-001\",\n  \"value\": 22.5\n}"
+            },
+            "url": {
+              "raw": "https://sensorhub-three.vercel.app/api/sensors/readings",
+              "protocol": "https",
+              "host": ["sensorhub-three", "vercel", "app"],
+              "path": ["api", "sensors", "readings"]
+            },
+            "description": "Test what happens with an invalid API key (should return 401)"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://sensorhub-three.vercel.app",
+      "type": "string"
+    },
+    {
+      "key": "api_key",
+      "value": "your-api-key-here",
+      "type": "string"
+    }
+  ]
+}
