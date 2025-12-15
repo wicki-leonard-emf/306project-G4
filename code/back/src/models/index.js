@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client';
 
 // Utiliser un singleton pour PrismaClient en développement
 // pour éviter les multiples instances lors du hot reload
-const globalForPrisma = global as unknown as { prisma: PrismaClient };
+const globalForPrisma = global;
 
 export const prisma =
   globalForPrisma.prisma ||
