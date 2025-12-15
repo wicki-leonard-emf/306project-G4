@@ -14,13 +14,13 @@ const PORT = process.env.PORT || 3000;
 app.use(corsOptions);
 app.use(express.json());
 
-// Routes API
-app.use('/api', router);
-
 // Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+
+// Routes API
+app.use('/api', router);
 
 // Error handler (doit être en dernier)
 app.use(errorHandler);
