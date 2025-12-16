@@ -19,9 +19,7 @@ node_modules/
 .coverage
 coverage/
 
-# Production
-code/front/dist
-code/front/build
+# Production (do not ignore build outputs so Vercel can deploy the SPA)
 .next
 
 # Misc

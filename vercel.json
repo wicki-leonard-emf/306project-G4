@@ -1,11 +1,12 @@
 {
   "version": 2,
-  "buildCommand": "cd code/front && npm install && npm run build && cd ../back && npm install",
-  "outputDirectory": "code/front/build",
   "builds": [
     {
-      "src": "code/front/build/**",
-      "use": "@vercel/static"
+      "src": "code/front/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "build"
+      }
     },
     {
       "src": "code/back/src/index.js",
@@ -18,8 +19,12 @@
       "dest": "code/back/src/index.js"
     },
     {
+      "handle": "filesystem"
+    },
+    {
       "src": "/(.*)",
-      "dest": "code/front/build/index.html"
+      "dest": "/index.html",
+      "status": 200
     }
   ]
 }
