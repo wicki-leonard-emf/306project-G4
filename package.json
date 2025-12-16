@@ -7,7 +7,7 @@
     "dev": "echo 'Run individual dev servers: cd code/front && npm run dev (port 3000) and cd code/back && npm run dev (port 3000 as API)'",
     "build": "npm --prefix code/front run build && npm --prefix code/back run build",
     "start": "npm --prefix code/back run start",
-    "vercel-build": "npm --prefix code/front run build && npm --prefix code/back run vercel-build"
+    "vercel-build": "npm install --prefix code/front && npm install --prefix code/back && npm --prefix code/front run build && npm --prefix code/back run vercel-build"
   },
   "keywords": [
     "module306",
