@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "cd code/front && npm ci || npm install && npm run build && cd ../back && npm ci || npm install",
+  "buildCommand": "cd code/front && npm ci && npm run build && cd ../back && npm ci && npm run prisma:generate",
   "outputDirectory": "code/front/build",
   "builds": [
     {
@@ -14,12 +14,8 @@
       "dest": "code/back/src/index.js"
     },
     {
-      "handle": "filesystem"
-    },
-    {
       "src": "/(.*)",
-      "dest": "/index.html",
-      "status": 200
+      "dest": "code/back/src/index.js"
     }
   ]
 }
