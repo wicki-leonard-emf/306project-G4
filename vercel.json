@@ -18,9 +18,11 @@
       "src": "/api/(.*)",
       "dest": "code/back/src/index.js"
     },
+    { "handle": "filesystem" },
     {
       "src": "/(.*)",
-      "dest": "/index.html"
+      "dest": "/index.html",
+      "status": 200
     }
   ]
 }
