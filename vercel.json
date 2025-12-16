@@ -4,6 +4,10 @@
   "outputDirectory": "code/front/build",
   "builds": [
     {
+      "src": "code/front/build/**",
+      "use": "@vercel/static"
+    },
+    {
       "src": "code/back/src/index.js",
       "use": "@vercel/node"
     }
@@ -15,7 +19,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/index.html"
+      "dest": "code/front/build/index.html"
     }
   ]
 }
