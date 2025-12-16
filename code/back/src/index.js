@@ -49,20 +49,22 @@ if (!process.env.VERCEL) {
 // Error handler (doit être en dernier)
 app.use(errorHandler);
 
-// Démarrage serveur
-const server = app.listen(PORT, () => {
-  console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`);
-  console.log(`📊 API disponible sur http://localhost:${PORT}/api`);
-});
-
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('SIGTERM reçu, fermeture du serveur...');
-  server.close(() => {
-    console.log('Serveur fermé');
-    process.exit(0);
-  });
-});
-
 // Export pour Vercel serverless
 export default app;
+
+// Start server only in local development (not on Vercel)
+if (!process.env.VERCEL) {
+  const server = app.listen(PORT, () => {
+    console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`);
+    console.log(`📊 API disponible sur http://localhost:${PORT}/api`);
+  });
+
+  // Graceful shutdown
+  process.on('SIGTERM', () => {
+    console.log('SIGTERM reçu, fermeture du serveur...');
+    server.close(() => {
+      console.log('Serveur fermé');
+      process.exit(0);
+    });
+  });
+}

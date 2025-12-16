@@ -1,6 +1,4 @@
 import app from '../code/back/src/index.js';
 
-// Vercel serverless function handler
-export default (req, res) => {
-  return app(req, res);
-};
+// Export Express app directly - Vercel handles the rest
+export default app;
