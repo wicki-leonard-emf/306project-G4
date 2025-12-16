@@ -33,18 +33,18 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Serve static files from frontend build
-// En production Vercel, les fichiers statiques sont dans /.vercel/output/static
-// En développement local, ils sont dans code/front/build
-const buildPath = process.env.VERCEL
-  ? path.join(__dirname, '../../../static')
-  : path.join(__dirname, '../../front/build');
-app.use(express.static(buildPath));
+// Serve static files from frontend build (LOCAL DEVELOPMENT ONLY)
+// En production Vercel, les fichiers statiques sont servis par Vercel directement
+// En développement local, Express les sert
+if (!process.env.VERCEL) {
+  const buildPath = path.join(__dirname, '../../front/build');
+  app.use(express.static(buildPath));
 
-// SPA fallback: serve index.html for all non-API routes
-app.get('*', (req, res) => {
-  res.sendFile(path.join(buildPath, 'index.html'));
-});
+  // SPA fallback: serve index.html for all non-API routes (LOCAL ONLY)
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(buildPath, 'index.html'));
+  });
+}
 
 // Error handler (doit être en dernier)
 app.use(errorHandler);

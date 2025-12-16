@@ -1,7 +1,5 @@
 {
   "version": 2,
-  "buildCommand": "cd code/front && npm ci && npm run build && cd ../back && npm ci && npm run prisma:generate",
-  "outputDirectory": "code/front/build",
   "builds": [
     {
       "src": "code/front/package.json",
@@ -18,10 +16,6 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "code/back/src/index.js"
-    },
-    {
-      "src": "/(.*)",
       "dest": "code/back/src/index.js"
     }
   ]
