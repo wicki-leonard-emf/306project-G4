@@ -1,6 +1,4 @@
 import express from 'express';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { corsOptions } from './middleware/cors.middleware.js';
 import { errorHandler } from './middleware/error.middleware.js';
@@ -11,10 +9,6 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
-// Get __dirname in ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // Middleware globaux
 app.use(corsOptions);
@@ -28,41 +22,16 @@ app.get('/health', (req, res) => {
 // Routes API
 app.use('/api', router);
 
-// Health check also available at /api/health
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
-
-// Serve static files from frontend build (LOCAL DEVELOPMENT ONLY)
-// En production Vercel, les fichiers statiques sont servis par Vercel directement
-// En développement local, Express les sert
-if (!process.env.VERCEL) {
-  const buildPath = path.join(__dirname, '../../front/build');
-  app.use(express.static(buildPath));
-
-  // SPA fallback: serve index.html for all non-API routes (LOCAL ONLY)
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(buildPath, 'index.html'));
-  });
-}
-
 // Error handler (doit être en dernier)
 app.use(errorHandler);
 
-// Démarrage serveur
-const server = app.listen(PORT, () => {
-  console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`);
-  console.log(`📊 API disponible sur http://localhost:${PORT}/api`);
-});
-
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('SIGTERM reçu, fermeture du serveur...');
-  server.close(() => {
-    console.log('Serveur fermé');
-    process.exit(0);
+// Démarrage serveur (seulement en dev, pas sur Vercel)
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`);
+    console.log(`📊 API disponible sur http://localhost:${PORT}/api`);
   });
-});
+}
 
 // Export pour Vercel serverless
 export default app;
