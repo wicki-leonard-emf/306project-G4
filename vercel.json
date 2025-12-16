@@ -1,7 +1,7 @@
 {
   "version": 2,
   "buildCommand": "cd code/front && npm install && npm run build && cd ../back && npm install",
-  "outputDirectory": "code/front/dist",
+  "outputDirectory": "code/front/build",
   "builds": [
     {
       "src": "code/back/src/index.js",
