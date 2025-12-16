@@ -37,10 +37,41 @@ else
     echo "✅ Plugin docker compose déjà présent."
 fi
 
-# --- CONFIGURATION DES CAPTEURS ---
-echo "📝 Génération du fichier .env (seuls les IDs capteurs sont demandés)..."
-read -p "🌡️ TEMP_SENSOR_ID: " TEMP_ID
-read -p "💧 HUMIDITY_SENSOR_ID: " HUM_ID
+# --- CONFIGURATION DES CAPTEURS ET DE LA SALLE ---
+echo "📝 Configuration de la salle et des capteurs..."
+read -p "🏫 Nom de la salle (ex: C114): " ROOM_NAME
+read -p "📝 Description de la salle (optionnel): " ROOM_DESCRIPTION
+read -p "🌡️ TEMP_SENSOR_ID (ex: PHIDGET-TEMP-001): " TEMP_ID
+read -p "💧 HUMIDITY_SENSOR_ID (ex: PHIDGET-HUM-001): " HUM_ID
+
+# Créer la salle et les capteurs dans la base de données
+echo "🔄 Création de la salle et des capteurs dans la base de données..."
+ROOM_RESPONSE=$(curl -s -X POST "https://sensorhub-three.vercel.app/api/rooms" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"name\": \"${ROOM_NAME}\",
+    \"description\": \"${ROOM_DESCRIPTION}\",
+    \"sensors\": [
+      {
+        \"serialNumber\": \"${TEMP_ID:-PHIDGET-TEMP-XXX}\",
+        \"type\": \"TEMPERATURE\"
+      },
+      {
+        \"serialNumber\": \"${HUM_ID:-PHIDGET-HUM-XXX}\",
+        \"type\": \"HUMIDITY\"
+      }
+    ]
+  }")
+
+# Vérifier si la création a réussi
+if echo "$ROOM_RESPONSE" | grep -q "success"; then
+  ROOM_ID=$(echo "$ROOM_RESPONSE" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
+  echo "✅ Salle créée avec succès ! ID: $ROOM_ID"
+else
+  echo "⚠️ Erreur lors de la création de la salle:"
+  echo "$ROOM_RESPONSE"
+  echo "Continuez l'installation manuellement si nécessaire."
+fi
 
 cat > .env <<EOF
 # Clé API pour authentifier le Raspberry
