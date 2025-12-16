@@ -2,17 +2,7 @@
   "version": 2,
   "outputDirectory": "code/front/build",
   "buildCommand": "npm run vercel-build",
-  "builds": [
-    {
-      "src": "code/back/src/index.js",
-      "use": "@vercel/node"
-    }
-  ],
   "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "code/back/src/index.js"
-    },
     {
       "handle": "filesystem"
     },
