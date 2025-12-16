@@ -26,6 +26,17 @@ interface Room {
   category?: string
 }
 
+interface ApiRoom {
+  id: string
+  name: string
+  description?: string
+  currentTemp?: number
+  currentHumidity?: number
+  lastUpdate?: string
+}
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://sensorhub-three.vercel.app"
+
 const generateChartData = (trend: "up" | "down") => {
   const data: number[] = []
   let current = Math.random() * 0.3 + 0.3
@@ -46,112 +57,34 @@ const generateChartData = (trend: "up" | "down") => {
   return data
 }
 
-const initialRooms: Room[] = [
-  {
-    id: "1",
-    room: "A35",
-    temperature: 13,
-    humidity: 48,
-    trend: "down",
-    percentage: 4,
-    period: "Depuis ce matin",
-    chartData: generateChartData("down"),
-    category: "all"
-  },
-  {
-    id: "2",
-    room: "A44",
-    temperature: 12,
-    humidity: 52,
-    trend: "up",
-    percentage: 10,
-    period: "Depuis hier",
-    chartData: generateChartData("up"),
-    category: "subscriptions"
-  },
-  {
-    id: "3",
-    room: "C36",
-    temperature: 23,
-    humidity: 63,
-    trend: "down",
-    percentage: 20,
-    period: "Cette semaine",
-    chartData: generateChartData("down"),
-    category: "all"
-  },
-  {
-    id: "4",
-    room: "A37",
-    temperature: 13,
-    humidity: 47,
-    trend: "down",
-    percentage: 4,
-    period: "Depuis ce matin",
-    chartData: generateChartData("down"),
-    category: "all"
-  },
-  {
-    id: "5",
-    room: "A36",
-    temperature: 23,
-    humidity: 58,
-    trend: "down",
-    percentage: 20,
-    period: "Cette semaine",
-    chartData: generateChartData("down"),
-    category: "subscriptions"
-  },
-  {
-    id: "6",
-    room: "A42",
-    temperature: 12,
-    humidity: 55,
-    trend: "up",
-    percentage: 10,
-    period: "Depuis hier",
-    chartData: generateChartData("up"),
-    category: "all"
-  },
-  {
-    id: "7",
-    room: "A45",
-    temperature: 12,
-    humidity: 61,
-    trend: "up",
-    percentage: 10,
-    period: "Depuis hier",
-    chartData: generateChartData("up"),
-    category: "subscriptions"
-  },
-  {
-    id: "8",
-    room: "A41",
-    temperature: 23,
-    humidity: 57,
-    trend: "down",
-    percentage: 20,
-    period: "Cette semaine",
-    chartData: generateChartData("down"),
-    category: "all"
-  },
-  {
-    id: "9",
-    room: "A34",
-    temperature: 13,
-    humidity: 50,
-    trend: "down",
-    percentage: 4,
-    period: "Depuis ce matin",
-    chartData: generateChartData("down"),
-    category: "all"
-  }
-]
+const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max)
+
+const formatLastUpdate = (iso?: string) => {
+  if (!iso) return "Mise à jour inconnue"
+
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return "Mise à jour inconnue"
+
+  const diffMs = Date.now() - date.getTime()
+  const diffMinutes = Math.floor(diffMs / 60000)
+  const diffHours = Math.floor(diffMinutes / 60)
+  const diffDays = Math.floor(diffHours / 24)
+
+  if (diffMinutes < 1) return "Il y a quelques secondes"
+  if (diffMinutes < 60) return `Il y a ${diffMinutes} min`
+  if (diffHours < 24) return `Il y a ${diffHours} h`
+  return `Il y a ${diffDays} j`
+}
+
+const normalizeTempForChart = (temp: number) => {
+  const normalized = temp / 40
+  return clamp(normalized, 0.05, 0.95)
+}
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [loginError, setLoginError] = useState("")
-  const [rooms, setRooms] = useState<Room[]>(initialRooms)
+  const [rooms, setRooms] = useState<Room[]>([])
   const [searchTerm, setSearchTerm] = useState("")
 
   // Modal states
@@ -164,7 +97,7 @@ export default function App() {
   const [activeFilters, setActiveFilters] = useState<string[]>([])
 
   // Subscriptions state
-  const [subscribedRooms, setSubscribedRooms] = useState<string[]>(["2", "5", "7"])
+  const [subscribedRooms, setSubscribedRooms] = useState<string[]>([])
 
   // Theme
   const [theme, setTheme] = useState<"light" | "dark">(() => {
@@ -232,6 +165,71 @@ export default function App() {
       setSubscribedRooms([...subscribedRooms, roomId])
     }
   }
+
+  useEffect(() => {
+    if (!isAuthenticated) return
+
+    let isMounted = true
+    let intervalId: number
+
+    const fetchRooms = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/rooms`)
+        if (!response.ok) {
+          throw new Error(`API responded with status ${response.status}`)
+        }
+
+        const data: ApiRoom[] = await response.json()
+
+        if (!isMounted) return
+
+        setRooms((previousRooms) => {
+          return data.map((roomFromApi) => {
+            const previousRoom = previousRooms.find((room) => room.id === roomFromApi.id)
+            const rawTemp = Number(roomFromApi.currentTemp ?? 0)
+            const rawHumidity = Number(roomFromApi.currentHumidity ?? 0)
+
+            const temperature = Number.isFinite(rawTemp) ? Math.round(rawTemp * 10) / 10 : 0
+            const humidity = Number.isFinite(rawHumidity) ? Math.round(rawHumidity) : 0
+
+            const trend: "up" | "down" =
+              previousRoom && previousRoom.temperature > temperature ? "down" : "up"
+
+            const percentage = previousRoom && previousRoom.temperature > 0
+              ? Math.round(((temperature - previousRoom.temperature) / previousRoom.temperature) * 100)
+              : 0
+
+            const normalizedValue = normalizeTempForChart(temperature)
+            const chartData = previousRoom?.chartData?.length
+              ? [...previousRoom.chartData.slice(-19), normalizedValue]
+              : Array.from({ length: 20 }, () => normalizedValue)
+
+            return {
+              id: roomFromApi.id,
+              room: roomFromApi.name ?? "Salle",
+              temperature,
+              humidity,
+              trend,
+              percentage,
+              period: formatLastUpdate(roomFromApi.lastUpdate),
+              chartData,
+              category: previousRoom?.category ?? "all",
+            }
+          })
+        })
+      } catch (error) {
+        console.error("Erreur lors de la récupération des salles:", error)
+      }
+    }
+
+    fetchRooms()
+    intervalId = window.setInterval(fetchRooms, 2000)
+
+    return () => {
+      isMounted = false
+      window.clearInterval(intervalId)
+    }
+  }, [isAuthenticated])
 
   // Show login page if not authenticated
   if (!isAuthenticated) {
