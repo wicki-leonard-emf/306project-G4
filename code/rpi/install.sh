@@ -115,5 +115,39 @@ sudo docker compose down || true
 sudo docker compose pull
 sudo docker compose up -d
 
+# --- 3. CONFIGURATION DU REDÉMARRAGE AUTOMATIQUE ---
+
+echo "⚙️ Configuration du redémarrage automatique au démarrage du système..."
+
+# Déterminer le répertoire de travail du service
+WORK_DIR=$(pwd)
+
+# Créer un service systemd pour redémarrer docker-compose au boot
+sudo tee /etc/systemd/system/phidget-docker.service > /dev/null <<EOF
+[Unit]
+Description=Phidget Data Logger Docker Service
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+User=$USER
+WorkingDirectory=$WORK_DIR
+ExecStart=/usr/bin/docker compose up -d
+Restart=no
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Activer et démarrer le service
+sudo systemctl daemon-reload
+sudo systemctl enable phidget-docker.service
+
+echo "✅ Service systemd 'phidget-docker' activé !"
+echo "   Au redémarrage du RPi, le service Docker démarrera automatiquement."
+
 echo "✅ TOUT EST PRÊT !"
 echo "📜 Pour voir les logs : sudo docker compose logs -f"
+echo "🔄 Pour redémarrer manuellement : sudo systemctl restart phidget-docker"
+echo "❌ Pour arrêter le service : sudo systemctl stop phidget-docker"
