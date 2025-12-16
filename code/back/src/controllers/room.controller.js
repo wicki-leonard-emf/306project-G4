@@ -112,6 +112,121 @@ export const getRoomById = async (req, res) => {
 };
 
 /**
+ * POST /api/rooms
+ * Crée une nouvelle salle avec ses capteurs
+ * Format: { name: string, description?: string, sensors: [{ serialNumber: string, type: 'TEMPERATURE' | 'HUMIDITY' }, ...] }
+ */
+export const createRoom = async (req, res) => {
+  try {
+    const { name, description, sensors } = req.body;
+
+    // Valider les champs requis
+    if (!name || typeof name !== 'string') {
+      return res.status(400).json({
+        error: 'name requis (string)',
+        code: 'VALIDATION_ERROR'
+      });
+    }
+
+    if (!Array.isArray(sensors) || sensors.length === 0) {
+      return res.status(400).json({
+        error: 'sensors doit être un tableau non-vide',
+        code: 'VALIDATION_ERROR'
+      });
+    }
+
+    // Valider que la salle n'existe pas déjà
+    const existingRoom = await prisma.room.findUnique({
+      where: { name }
+    });
+
+    if (existingRoom) {
+      return res.status(409).json({
+        error: `Une salle avec le nom "${name}" existe déjà`,
+        code: 'ROOM_ALREADY_EXISTS'
+      });
+    }
+
+    // Valider les capteurs
+    const validSensorTypes = ['TEMPERATURE', 'HUMIDITY'];
+    const errors = [];
+
+    for (const sensor of sensors) {
+      if (!sensor.serialNumber || typeof sensor.serialNumber !== 'string') {
+        errors.push({
+          index: sensors.indexOf(sensor),
+          error: 'serialNumber requis (string)'
+        });
+      }
+
+      if (!sensor.type || !validSensorTypes.includes(sensor.type)) {
+        errors.push({
+          index: sensors.indexOf(sensor),
+          serialNumber: sensor.serialNumber,
+          error: `type requis et doit être l'un de: ${validSensorTypes.join(', ')}`
+        });
+      }
+
+      // Vérifier que le serialNumber n'existe pas déjà
+      const existingSensor = await prisma.sensor.findUnique({
+        where: { serialNumber: sensor.serialNumber }
+      });
+
+      if (existingSensor) {
+        errors.push({
+          index: sensors.indexOf(sensor),
+          serialNumber: sensor.serialNumber,
+          error: 'Ce numéro de série existe déjà'
+        });
+      }
+    }
+
+    if (errors.length > 0) {
+      return res.status(400).json({
+        error: 'Erreurs de validation dans les capteurs',
+        code: 'VALIDATION_ERROR',
+        details: errors
+      });
+    }
+
+    // Créer la salle et les capteurs en une transaction
+    const room = await prisma.room.create({
+      data: {
+        name,
+        description: description || null,
+        sensors: {
+          create: sensors.map(sensor => ({
+            type: sensor.type,
+            serialNumber: sensor.serialNumber
+          }))
+        }
+      },
+      include: {
+        sensors: true
+      }
+    });
+
+    res.status(201).json({
+      success: true,
+      room: {
+        id: room.id,
+        name: room.name,
+        description: room.description,
+        sensors: room.sensors.map(sensor => ({
+          id: sensor.id,
+          serialNumber: sensor.serialNumber,
+          type: sensor.type
+        })),
+        createdAt: room.createdAt
+      }
+    });
+  } catch (error) {
+    console.error('Erreur createRoom:', error);
+    res.status(500).json({ error: 'Erreur lors de la création de la salle' });
+  }
+};
+
+/**
  * POST /api/rooms/:roomId/readings
  * Ingère les lectures de tous les capteurs d'une salle
  * Format: { readings: [{ serialNumber: string, value: number }, ...] }

@@ -14,6 +14,86 @@
 
 ## Salles (Rooms)
 
+### POST /api/rooms
+**Crée une nouvelle salle avec ses capteurs**
+
+**Authentification:** Non requis
+
+**Headers:**
+```
+Content-Type: application/json
+```
+
+**Body:**
+```json
+{
+  "name": "C114",
+  "description": "Salle de classe informatique - Bâtiment C",
+  "sensors": [
+    {
+      "serialNumber": "PHIDGET-TEMP-001",
+      "type": "TEMPERATURE"
+    },
+    {
+      "serialNumber": "PHIDGET-HUM-001",
+      "type": "HUMIDITY"
+    }
+  ]
+}
+```
+
+**Paramètres:**
+- `name` (string, requis) - Nom unique de la salle
+- `description` (string, optionnel) - Description de la salle
+- `sensors` (array, requis) - Tableau des capteurs avec:
+  - `serialNumber` (string, requis) - Numéro de série unique du capteur
+  - `type` (string, requis) - Type: `TEMPERATURE` ou `HUMIDITY`
+
+**Réponse (201):**
+```json
+{
+  "success": true,
+  "room": {
+    "id": "cmiyfqjr2000014j0nt7aopm3",
+    "name": "C114",
+    "description": "Salle de classe informatique - Bâtiment C",
+    "sensors": [
+      {
+        "id": "sensor-001",
+        "serialNumber": "PHIDGET-TEMP-001",
+        "type": "TEMPERATURE"
+      },
+      {
+        "id": "sensor-002",
+        "serialNumber": "PHIDGET-HUM-001",
+        "type": "HUMIDITY"
+      }
+    ],
+    "createdAt": "2025-12-15T14:30:00.000Z"
+  }
+}
+```
+
+**Erreurs:**
+- `400` - Validation échouée (paramètres manquants, capteurs invalides, etc.)
+- `409` - Salle ou numéro de série de capteur déjà existant
+
+**Exemple cURL:**
+```bash
+curl -X POST https://sensorhub-three.vercel.app/api/rooms \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "C114",
+    "description": "Salle de classe informatique",
+    "sensors": [
+      {"serialNumber": "PHIDGET-TEMP-001", "type": "TEMPERATURE"},
+      {"serialNumber": "PHIDGET-HUM-001", "type": "HUMIDITY"}
+    ]
+  }'
+```
+
+---
+
 ### GET /api/rooms
 **Récupère toutes les salles avec leurs dernières valeurs de capteurs**
 
@@ -358,6 +438,7 @@ node asdfasdf.js
 
 | Méthode | Endpoint | Authentification | Description |
 |---------|----------|-----------------|-------------|
+| POST | `/api/rooms` | Non | **Créer une salle avec ses capteurs** |
 | GET | `/api/rooms` | Non | Lister toutes les salles |
 | GET | `/api/rooms/:id` | Non | Détails d'une salle |
 | POST | `/api/rooms/:roomId/readings` | Oui | Envoyer plusieurs lectures |
@@ -367,4 +448,4 @@ node asdfasdf.js
 
 ---
 
-**Dernière mise à jour:** 15 Décembre 2025
+**Dernière mise à jour:** 16 Décembre 2025

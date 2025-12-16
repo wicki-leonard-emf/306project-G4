@@ -9,6 +9,31 @@
       "name": "Rooms",
       "item": [
         {
+          "name": "Create room with sensors",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"C114\",\n  \"description\": \"Salle de classe informatique - Bâtiment C\",\n  \"sensors\": [\n    {\n      \"serialNumber\": \"PHIDGET-TEMP-001\",\n      \"type\": \"TEMPERATURE\"\n    },\n    {\n      \"serialNumber\": \"PHIDGET-HUM-001\",\n      \"type\": \"HUMIDITY\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "https://sensorhub-three.vercel.app/api/rooms",
+              "protocol": "https",
+              "host": ["sensorhub-three", "vercel", "app"],
+              "path": ["api", "rooms"]
+            },
+            "description": "Creates a new room with its associated sensors. The room name and sensor serial numbers must be unique."
+          },
+          "response": []
+        },
+        {
           "name": "Get all rooms",
           "request": {
             "method": "GET",

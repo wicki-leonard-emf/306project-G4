@@ -10,6 +10,24 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  ADMIN
+  ENSEIGNANT
+  ELEVE
+}
+
+// Modèle Utilisateur
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String   // Hash du mot de passe
+  role      UserRole @default(ELEVE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
 // Modèle Salle de classe
 model Room {
   id          String   @id @default(cuid())

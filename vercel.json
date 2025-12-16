@@ -1,0 +1,33 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build",
+  "outputDirectory": "code/front/build",
+  "installCommand": "npm install && cd code/front && npm install && cd ../back && npm install",
+  "builds": [
+    {
+      "src": "code/front/vite.config.ts",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "code/front/build"
+      }
+    },
+    {
+      "src": "code/back/src/index.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "code/back/src/index.js"
+    },
+    {
+      "src": "/(?!api).*",
+      "dest": "/index.html",
+      "status": 200
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
+}

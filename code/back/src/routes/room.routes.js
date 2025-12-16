@@ -1,11 +1,14 @@
 import { Router } from 'express';
-import { getRooms, getRoomById, ingestRoomReadings } from '../controllers/room.controller.js';
+import { getRooms, getRoomById, createRoom, ingestRoomReadings } from '../controllers/room.controller.js';
 import { authenticateRPi } from '../middleware/validate.middleware.js';
 
 const router = Router();
 
 // GET /api/rooms - Liste toutes les salles
 router.get('/', getRooms);
+
+// POST /api/rooms - Crée une nouvelle salle avec ses capteurs
+router.post('/', createRoom);
 
 // GET /api/rooms/:id - Détails d'une salle
 router.get('/:id', getRoomById);

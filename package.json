@@ -1,0 +1,20 @@
+{
+  "name": "306project-g4",
+  "version": "1.0.0",
+  "description": "Module 306 - SensorHub project for classroom monitoring",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'Run individual dev servers: cd code/front && npm run dev (port 3000) and cd code/back && npm run dev (port 3000 as API)'",
+    "build": "npm --prefix code/front run build && npm --prefix code/back run build",
+    "start": "npm --prefix code/back run start",
+    "vercel-build": "npm --prefix code/front run build && npm --prefix code/back run vercel-build"
+  },
+  "keywords": [
+    "module306",
+    "sensorhub",
+    "classroom",
+    "monitoring"
+  ],
+  "author": "EMF CFC Apprentices",
+  "license": "ISC"
+}

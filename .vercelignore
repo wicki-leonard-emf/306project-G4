@@ -1,0 +1,50 @@
+# Documentation
+documentation/
+*.docx
+*.xlsx
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Testing
+.coverage
+coverage/
+
+# Production
+code/front/dist
+code/front/build
+.next
+
+# Misc
+.DS_Store
+.env
+.env.local
+.env.*.local
+.git
+.gitignore
+*.md
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Raspberry Pi and Docker (not deployed to Vercel)
+code/rpi/
+Dockerfile
+docker-compose.yml
+
+# Journal
+Journal/
+*.journal
