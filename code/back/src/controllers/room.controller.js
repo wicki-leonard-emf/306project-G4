@@ -448,3 +448,125 @@ export const updateRoom = async (req, res) => {
     res.status(500).json({ error: 'Erreur lors de la mise à jour de la salle' });
   }
 };
+
+/**
+ * GET /api/rooms/:roomId/history?period=4h
+ * Récupère l'historique des données d'une salle
+ * Paramètres query: period (4h, 1d, 1w, 1m)
+ */
+export const getRoomHistory = async (req, res) => {
+  try {
+    const { roomId } = req.params;
+    const { period = '4h' } = req.query;
+
+    // Vérifier que la salle existe
+    const room = await prisma.room.findUnique({
+      where: { id: roomId },
+      include: { sensors: true }
+    });
+
+    if (!room) {
+      return res.status(404).json({
+        error: 'Salle non trouvée',
+        code: 'ROOM_NOT_FOUND'
+      });
+    }
+
+    // Calculer la date de début selon la période
+    const now = new Date();
+    let startDate = new Date();
+    let intervalMinutes;
+
+    switch (period) {
+      case '4h':
+        startDate.setHours(now.getHours() - 4);
+        intervalMinutes = 5; // Un point toutes les 5 minutes
+        break;
+      case '1d':
+        startDate.setDate(now.getDate() - 1);
+        intervalMinutes = 30; // Un point toutes les 30 minutes
+        break;
+      case '1w':
+        startDate.setDate(now.getDate() - 7);
+        intervalMinutes = 180; // Un point toutes les 3 heures
+        break;
+      case '1m':
+        startDate.setMonth(now.getMonth() - 1);
+        intervalMinutes = 720; // Un point toutes les 12 heures
+        break;
+      default:
+        startDate.setHours(now.getHours() - 4);
+        intervalMinutes = 5;
+    }
+
+    // Récupérer les capteurs de température et humidité
+    const tempSensor = room.sensors.find(s => s.type === 'TEMPERATURE');
+    const humiditySensor = room.sensors.find(s => s.type === 'HUMIDITY');
+
+    // Récupérer les readings depuis startDate
+    const [tempReadings, humidityReadings] = await Promise.all([
+      tempSensor ? prisma.reading.findMany({
+        where: {
+          sensorId: tempSensor.id,
+          timestamp: { gte: startDate }
+        },
+        orderBy: { timestamp: 'asc' }
+      }) : [],
+      humiditySensor ? prisma.reading.findMany({
+        where: {
+          sensorId: humiditySensor.id,
+          timestamp: { gte: startDate }
+        },
+        orderBy: { timestamp: 'asc' }
+      }) : []
+    ]);
+
+    // Regrouper les données par intervalles
+    const groupedData = [];
+    const intervalMs = intervalMinutes * 60 * 1000;
+    let currentTime = startDate.getTime();
+
+    while (currentTime <= now.getTime()) {
+      const nextTime = currentTime + intervalMs;
+
+      // Trouver les readings dans cet intervalle
+      const tempInInterval = tempReadings.filter(r => {
+        const t = r.timestamp.getTime();
+        return t >= currentTime && t < nextTime;
+      });
+
+      const humidityInInterval = humidityReadings.filter(r => {
+        const t = r.timestamp.getTime();
+        return t >= currentTime && t < nextTime;
+      });
+
+      // Calculer la moyenne pour cet intervalle
+      const avgTemp = tempInInterval.length > 0
+        ? tempInInterval.reduce((sum, r) => sum + r.value, 0) / tempInInterval.length
+        : null;
+
+      const avgHumidity = humidityInInterval.length > 0
+        ? humidityInInterval.reduce((sum, r) => sum + r.value, 0) / humidityInInterval.length
+        : null;
+
+      if (avgTemp !== null || avgHumidity !== null) {
+        groupedData.push({
+          timestamp: new Date(currentTime),
+          temperature: avgTemp !== null ? Math.round(avgTemp * 10) / 10 : null,
+          humidity: avgHumidity !== null ? Math.round(avgHumidity) : null
+        });
+      }
+
+      currentTime = nextTime;
+    }
+
+    res.json({
+      roomId,
+      period,
+      data: groupedData
+    });
+  } catch (error) {
+    console.error('Erreur getRoomHistory:', error);
+    res.status(500).json({ error: 'Erreur lors de la récupération de l\'historique' });
+  }
+};
