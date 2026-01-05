@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getRooms, getRoomById, createRoom, ingestRoomReadings, updateRoom, getRoomHistory } from '../controllers/room.controller.js';
+import { getRooms, getRoomById, createRoom, ingestRoomReadings, updateRoom, getRoomHistory, updateRoomThresholds } from '../controllers/room.controller.js';
 import { authenticateRPi } from '../middleware/validate.middleware.js';
 import { requireAuth, requireRole } from '../middleware/auth.middleware.js';
 
@@ -20,6 +20,10 @@ router.get('/:roomId/history', getRoomHistory);
 // PUT /api/rooms/:id - Mise à jour d'une salle (nom et/ou description)
 // Middleware: requireAuth + requireRole (ADMIN ou ENSEIGNANT uniquement)
 router.put('/:id', requireAuth, requireRole(['ADMIN', 'ENSEIGNANT']), updateRoom);
+
+// PATCH /api/rooms/:id/thresholds - Mise à jour des seuils d'alerte
+// Middleware: requireAuth + requireRole (ADMIN uniquement)
+router.patch('/:id/thresholds', requireAuth, requireRole(['ADMIN']), updateRoomThresholds);
 
 // POST /api/rooms/:roomId/readings - Ingérer les lectures d'une salle
 // Middleware: authenticateRPi (vérifie X-API-Key)
