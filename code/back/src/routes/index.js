@@ -2,6 +2,7 @@ import { Router } from 'express';
 import roomRoutes from './room.routes.js';
 import sensorRoutes from './sensor.routes.js';
 import authRoutes from './auth.routes.js';
+import subscriptionRoutes from './subscription.routes.js';
 
 const router = Router();
 
@@ -9,5 +10,6 @@ const router = Router();
 router.use('/auth', authRoutes);
 router.use('/rooms', roomRoutes);
 router.use('/sensors', sensorRoutes);
+router.use('/subscriptions', subscriptionRoutes);
 
 export default router;
