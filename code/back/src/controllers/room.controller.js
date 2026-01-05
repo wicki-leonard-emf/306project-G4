@@ -528,13 +528,13 @@ export const getRoomHistory = async (req, res) => {
 
     while (currentTime <= now.getTime()) {
       const nextTime = currentTime + intervalMs;
-      
+
       // Trouver les readings dans cet intervalle
       const tempInInterval = tempReadings.filter(r => {
         const t = r.timestamp.getTime();
         return t >= currentTime && t < nextTime;
       });
-      
+
       const humidityInInterval = humidityReadings.filter(r => {
         const t = r.timestamp.getTime();
         return t >= currentTime && t < nextTime;
@@ -544,7 +544,7 @@ export const getRoomHistory = async (req, res) => {
       const avgTemp = tempInInterval.length > 0
         ? tempInInterval.reduce((sum, r) => sum + r.value, 0) / tempInInterval.length
         : null;
-      
+
       const avgHumidity = humidityInInterval.length > 0
         ? humidityInInterval.reduce((sum, r) => sum + r.value, 0) / humidityInInterval.length
         : null;

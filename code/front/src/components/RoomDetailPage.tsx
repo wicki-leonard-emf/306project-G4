@@ -51,7 +51,7 @@ export function RoomDetailPage({
         }
 
         const result = await response.json()
-        
+
         // Format data for charts
         const formattedData = result.data.map((item: any) => {
           const date = new Date(item.timestamp)
