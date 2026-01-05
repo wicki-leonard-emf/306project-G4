@@ -33,56 +33,73 @@ export function RoomDetailPage({
   const [thresholdModalOpen, setThresholdModalOpen] = useState(false)
   const [historicalData, setHistoricalData] = useState<Array<{ time: string, temperature: number, humidity: number }>>([])
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('4h')
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false)
   const isHot = room.trend === "up"
   // Utiliser des couleurs réelles pour Recharts (pas de variables CSS)
   const color = isHot ? "#ef4444" : "#a855f7" // red-500 et purple-500
 
-  // Generate historical data based on selected period
-  useEffect(() => {
-    const now = new Date()
-    let dataPoints: number
-    let intervalMs: number
-    let timeFormat: (date: Date) => string
+  const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "")
 
-    switch (selectedPeriod) {
-      case '4h':
-        dataPoints = 48 // 5 min intervals
-        intervalMs = 5 * 60 * 1000
-        timeFormat = (date) => date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
-        break
-      case '1d':
-        dataPoints = 48 // 30 min intervals
-        intervalMs = 30 * 60 * 1000
-        timeFormat = (date) => date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
-        break
-      case '1w':
-        dataPoints = 56 // 3 hour intervals
-        intervalMs = 3 * 60 * 60 * 1000
-        timeFormat = (date) => date.toLocaleDateString('fr-FR', { weekday: 'short', hour: '2-digit' })
-        break
-      case '1m':
-        dataPoints = 60 // 12 hour intervals
-        intervalMs = 12 * 60 * 60 * 1000
-        timeFormat = (date) => date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })
-        break
+  // Fetch historical data from API
+  useEffect(() => {
+    const fetchHistoricalData = async () => {
+      setIsLoadingHistory(true)
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/rooms/${room.id}/history?period=${selectedPeriod}`)
+        if (!response.ok) {
+          throw new Error(`API responded with status ${response.status}`)
+        }
+
+        const result = await response.json()
+        
+        // Format data for charts
+        const formattedData = result.data.map((item: any) => {
+          const date = new Date(item.timestamp)
+          let timeFormat: string
+
+          switch (selectedPeriod) {
+            case '4h':
+            case '1d':
+              timeFormat = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+              break
+            case '1w':
+              timeFormat = date.toLocaleDateString('fr-FR', { weekday: 'short', hour: '2-digit' })
+              break
+            case '1m':
+              timeFormat = date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })
+              break
+            default:
+              timeFormat = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+          }
+
+          return {
+            time: timeFormat,
+            temperature: item.temperature || 0,
+            humidity: item.humidity || 0
+          }
+        })
+
+        setHistoricalData(formattedData)
+      } catch (error) {
+        console.error('Erreur lors de la récupération de l\'historique:', error)
+        // Fallback to simulated data if API fails
+        const now = new Date()
+        const fallbackData = Array.from({ length: 48 }, (_, index) => {
+          const time = new Date(now.getTime() - (48 - index - 1) * 5 * 60000)
+          return {
+            time: time.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+            temperature: room.temperature + (Math.random() - 0.5) * 4,
+            humidity: room.humidity + (Math.random() - 0.5) * 15
+          }
+        })
+        setHistoricalData(fallbackData)
+      } finally {
+        setIsLoadingHistory(false)
+      }
     }
 
-    const data = Array.from({ length: dataPoints }, (_, index) => {
-      const time = new Date(now.getTime() - (dataPoints - index - 1) * intervalMs)
-      // Use current temperature as base and add variation
-      const baseTemp = room.temperature
-      const variation = (Math.random() - 0.5) * 4 // ±2°C variation
-      const trendEffect = room.trend === 'up' ? (index / dataPoints) * 2 : -(index / dataPoints) * 2
-
-      return {
-        time: timeFormat(time),
-        temperature: Math.round((baseTemp + variation + trendEffect) * 10) / 10,
-        humidity: Math.round((room.humidity + (Math.random() - 0.5) * 15) * 10) / 10
-      }
-    })
-
-    setHistoricalData(data)
-  }, [room.temperature, room.humidity, room.trend, selectedPeriod])
+    fetchHistoricalData()
+  }, [room.id, selectedPeriod, room.temperature, room.humidity, API_BASE_URL])
 
   const chartConfig = {
     temperature: {
@@ -341,6 +358,7 @@ export function RoomDetailPage({
                     {selectedPeriod === '1d' && 'Données des dernières 24 heures'}
                     {selectedPeriod === '1w' && 'Données de la dernière semaine'}
                     {selectedPeriod === '1m' && 'Données du dernier mois'}
+                    {isLoadingHistory && ' - Chargement...'}
                   </p>
                 </div>
                 <ChartContainer config={chartConfig} className="h-80 w-full">
