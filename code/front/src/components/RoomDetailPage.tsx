@@ -29,7 +29,7 @@ export function RoomDetailPage({
   onBack,
 }: RoomDetailPageProps) {
   const [thresholdModalOpen, setThresholdModalOpen] = useState(false)
-  const [historicalData, setHistoricalData] = useState<Array<{time: string, temperature: number, humidity: number}>>([])
+  const [historicalData, setHistoricalData] = useState<Array<{ time: string, temperature: number, humidity: number }>>([])
   const isHot = room.trend === "up"
   const color = isHot ? "#F04438" : "#7F56D9"
 
@@ -265,26 +265,26 @@ export function RoomDetailPage({
                   <AreaChart data={historicalData}>
                     <defs>
                       <linearGradient id="colorTemp" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor={color} stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor={color} stopOpacity={0.05}/>
+                        <stop offset="5%" stopColor={color} stopOpacity={0.3} />
+                        <stop offset="95%" stopColor={color} stopOpacity={0.05} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis 
-                      dataKey="time" 
+                    <XAxis
+                      dataKey="time"
                       className="text-xs"
                       tick={{ fill: '#717680' }}
                     />
-                    <YAxis 
+                    <YAxis
                       className="text-xs"
                       tick={{ fill: '#717680' }}
                       label={{ value: '°C', angle: -90, position: 'insideLeft', style: { fill: '#717680' } }}
                     />
                     <ChartTooltip content={<ChartTooltipContent />} />
-                    <Area 
-                      type="monotone" 
-                      dataKey="temperature" 
-                      stroke={color} 
+                    <Area
+                      type="monotone"
+                      dataKey="temperature"
+                      stroke={color}
                       strokeWidth={2}
                       fill="url(#colorTemp)"
                       animationDuration={300}
@@ -306,29 +306,29 @@ export function RoomDetailPage({
                 <ChartContainer config={chartConfig} className="h-64 w-full">
                   <LineChart data={historicalData}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis 
-                      dataKey="time" 
+                    <XAxis
+                      dataKey="time"
                       className="text-xs"
                       tick={{ fill: '#717680' }}
                     />
-                    <YAxis 
+                    <YAxis
                       className="text-xs"
                       tick={{ fill: '#717680' }}
                     />
                     <ChartTooltip content={<ChartTooltipContent />} />
                     <ChartLegend content={<ChartLegendContent />} />
-                    <Line 
-                      type="monotone" 
-                      dataKey="temperature" 
-                      stroke={color} 
+                    <Line
+                      type="monotone"
+                      dataKey="temperature"
+                      stroke={color}
                       strokeWidth={2}
                       dot={false}
                       animationDuration={300}
                     />
-                    <Line 
-                      type="monotone" 
-                      dataKey="humidity" 
-                      stroke="#1849a9" 
+                    <Line
+                      type="monotone"
+                      dataKey="humidity"
+                      stroke="#1849a9"
                       strokeWidth={2}
                       dot={false}
                       animationDuration={300}
