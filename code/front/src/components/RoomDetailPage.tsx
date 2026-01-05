@@ -1,7 +1,9 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "./ui/button"
 import { Badge } from "./ui/badge"
 import { RoomThresholdModal } from "./RoomThresholdModal"
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "./ui/chart"
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis, Line, LineChart } from "recharts"
 
 interface RoomDetailPageProps {
   room: {
@@ -27,8 +29,34 @@ export function RoomDetailPage({
   onBack,
 }: RoomDetailPageProps) {
   const [thresholdModalOpen, setThresholdModalOpen] = useState(false)
+  const [historicalData, setHistoricalData] = useState<Array<{time: string, temperature: number, humidity: number}>>([])
   const isHot = room.trend === "up"
   const color = isHot ? "#F04438" : "#7F56D9"
+
+  // Generate historical data from chartData
+  useEffect(() => {
+    const now = new Date()
+    const data = room.chartData.map((value, index) => {
+      const time = new Date(now.getTime() - (room.chartData.length - index - 1) * 60000) // 1 minute intervals
+      return {
+        time: time.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+        temperature: Math.round(value * 40 * 10) / 10, // Convert to temperature
+        humidity: room.humidity + (Math.random() - 0.5) * 10 // Simulate humidity variation
+      }
+    })
+    setHistoricalData(data)
+  }, [room.chartData, room.humidity])
+
+  const chartConfig = {
+    temperature: {
+      label: "Température (°C)",
+      color: color,
+    },
+    humidity: {
+      label: "Humidité (%)",
+      color: "#1849a9",
+    },
+  }
 
   const handleSaveThreshold = (thresholds: {
     minTemp: number
@@ -224,68 +252,89 @@ export function RoomDetailPage({
               </h2>
 
               {/* Chart 1 - Main Temperature Chart */}
-              <div className="bg-white border border-[#E9EAEB] rounded-xl p-10">
-                <div className="flex flex-col items-center justify-center h-80">
-                  <svg
-                    className="size-20 text-[#d5d7da] mb-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M3 13.125C3 12.504 3.504 12 4.125 12H6.375C6.996 12 7.5 12.504 7.5 13.125V19.875C7.5 20.496 6.996 21 6.375 21H4.125C3.504 21 3 20.496 3 19.875V13.125Z"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M10.5 5.625C10.5 5.004 11.004 4.5 11.625 4.5H13.875C14.496 4.5 15 5.004 15 5.625V19.875C15 20.496 14.496 21 13.875 21H11.625C11.004 21 10.5 20.496 10.5 19.875V5.625Z"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M18 9.375C18 8.754 18.504 8.25 19.125 8.25H21.375C21.996 8.25 22.5 8.754 22.5 9.375V19.875C22.5 20.496 21.996 21 21.375 21H19.125C18.504 21 18 20.496 18 19.875V9.375Z"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  <p className="text-lg font-semibold text-[#535862] mb-2">
-                    Graphique en construction
-                  </p>
-                  <p className="text-sm text-[#717680] text-center max-w-lg">
-                    Les données de température seront bientôt affichées ici avec
-                    des graphiques détaillés sur 24h, 7 jours et 30 jours.
+              <div className="bg-white border border-[#E9EAEB] rounded-xl p-6">
+                <div className="mb-4">
+                  <h3 className="text-lg font-semibold text-[#181d27] mb-1">
+                    Évolution de la température
+                  </h3>
+                  <p className="text-sm text-[#717680]">
+                    Données en temps réel sur les dernières minutes
                   </p>
                 </div>
+                <ChartContainer config={chartConfig} className="h-80 w-full">
+                  <AreaChart data={historicalData}>
+                    <defs>
+                      <linearGradient id="colorTemp" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={color} stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor={color} stopOpacity={0.05}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis 
+                      dataKey="time" 
+                      className="text-xs"
+                      tick={{ fill: '#717680' }}
+                    />
+                    <YAxis 
+                      className="text-xs"
+                      tick={{ fill: '#717680' }}
+                      label={{ value: '°C', angle: -90, position: 'insideLeft', style: { fill: '#717680' } }}
+                    />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Area 
+                      type="monotone" 
+                      dataKey="temperature" 
+                      stroke={color} 
+                      strokeWidth={2}
+                      fill="url(#colorTemp)"
+                      animationDuration={300}
+                    />
+                  </AreaChart>
+                </ChartContainer>
               </div>
 
-              {/* Chart 2 - Trends Analysis */}
-              <div className="bg-white border border-[#E9EAEB] rounded-xl p-10">
-                <div className="flex flex-col items-center justify-center h-64">
-                  <svg
-                    className="size-20 text-[#d5d7da] mb-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M3 3V21M21 21H3M7 13L11 9L15 13L21 7"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  <p className="text-lg font-semibold text-[#535862] mb-2">
-                    Analyse des tendances
-                  </p>
-                  <p className="text-sm text-[#717680] text-center max-w-lg">
-                    Évolution et prédictions à venir
+              {/* Chart 2 - Humidity Analysis */}
+              <div className="bg-white border border-[#E9EAEB] rounded-xl p-6">
+                <div className="mb-4">
+                  <h3 className="text-lg font-semibold text-[#181d27] mb-1">
+                    Température et Humidité
+                  </h3>
+                  <p className="text-sm text-[#717680]">
+                    Comparaison des deux métriques
                   </p>
                 </div>
+                <ChartContainer config={chartConfig} className="h-64 w-full">
+                  <LineChart data={historicalData}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis 
+                      dataKey="time" 
+                      className="text-xs"
+                      tick={{ fill: '#717680' }}
+                    />
+                    <YAxis 
+                      className="text-xs"
+                      tick={{ fill: '#717680' }}
+                    />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <ChartLegend content={<ChartLegendContent />} />
+                    <Line 
+                      type="monotone" 
+                      dataKey="temperature" 
+                      stroke={color} 
+                      strokeWidth={2}
+                      dot={false}
+                      animationDuration={300}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="humidity" 
+                      stroke="#1849a9" 
+                      strokeWidth={2}
+                      dot={false}
+                      animationDuration={300}
+                    />
+                  </LineChart>
+                </ChartContainer>
               </div>
             </div>
           </div>

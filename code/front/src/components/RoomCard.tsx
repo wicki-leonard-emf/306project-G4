@@ -1,4 +1,6 @@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu"
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./ui/chart"
+import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
 
 interface RoomCardProps {
   id: string
@@ -18,16 +20,18 @@ export function RoomCard({ id, room, temperature, humidity, trend, percentage, p
   const isHot = trend === "up"
   const color = isHot ? "#F04438" : "#7F56D9"
 
-  // Generate SVG path for mini chart
-  const width = 97
-  const height = 49
-  const points = chartData.map((value, index) => {
-    const x = (index / (chartData.length - 1)) * width
-    const y = height - (value * height)
-    return `${x},${y}`
-  }).join(" ")
+  // Transform chartData for Recharts
+  const chartDataFormatted = chartData.map((value, index) => ({
+    index,
+    value: value * 40 // Convert normalized value back to temperature range (0-40)
+  }))
 
-  const pathD = `M${points}`
+  const chartConfig = {
+    value: {
+      label: "Température",
+      color: color,
+    },
+  }
 
   return (
     <div
@@ -117,21 +121,26 @@ export function RoomCard({ id, room, temperature, humidity, trend, percentage, p
           </div>
 
           {/* Mini Chart */}
-          <svg
-            className="shrink-0"
-            width="97"
-            height="49"
-            viewBox="0 0 97 49"
-            fill="none"
-          >
-            <path
-              d={pathD}
-              stroke={color}
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              fill="none"
-            />
-          </svg>
+          <div className="shrink-0 w-[97px] h-[49px]">
+            <ChartContainer config={chartConfig} className="h-full w-full">
+              <AreaChart data={chartDataFormatted}>
+                <defs>
+                  <linearGradient id={`gradient-${id}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={color} stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor={color} stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <Area
+                  type="monotone"
+                  dataKey="value"
+                  stroke={color}
+                  strokeWidth={1.5}
+                  fill={`url(#gradient-${id})`}
+                  isAnimationActive={false}
+                />
+              </AreaChart>
+            </ChartContainer>
+          </div>
         </div>
       </div>
     </div>
