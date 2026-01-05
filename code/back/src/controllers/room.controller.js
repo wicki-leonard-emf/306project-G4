@@ -8,7 +8,7 @@ import { generateId } from '../lib/generateId.js';
 export const getRooms = async (req, res) => {
   try {
     const userId = req.session?.userId || 'demo-user';
-    
+
     const rooms = await prisma.room.findMany({
       include: {
         sensors: {
