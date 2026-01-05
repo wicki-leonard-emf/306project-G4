@@ -18,7 +18,8 @@ interface RoomCardProps {
 
 export function RoomCard({ id, room, temperature, humidity, trend, percentage, period, chartData, isSubscribed, onToggleSubscription, onClick }: RoomCardProps) {
   const isHot = trend === "up"
-  const color = isHot ? "hsl(var(--destructive))" : "hsl(var(--primary))"
+  // Utiliser des couleurs réelles pour Recharts (pas de variables CSS)
+  const color = isHot ? "#ef4444" : "#a855f7" // red-500 et purple-500
 
   // Transform chartData for Recharts
   const chartDataFormatted = chartData.map((value, index) => ({

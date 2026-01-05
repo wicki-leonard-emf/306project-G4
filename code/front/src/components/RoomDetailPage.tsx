@@ -34,7 +34,8 @@ export function RoomDetailPage({
   const [historicalData, setHistoricalData] = useState<Array<{ time: string, temperature: number, humidity: number }>>([])
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('4h')
   const isHot = room.trend === "up"
-  const color = isHot ? "hsl(var(--destructive))" : "hsl(var(--primary))"
+  // Utiliser des couleurs réelles pour Recharts (pas de variables CSS)
+  const color = isHot ? "#ef4444" : "#a855f7" // red-500 et purple-500
 
   // Generate historical data based on selected period
   useEffect(() => {
@@ -90,7 +91,7 @@ export function RoomDetailPage({
     },
     humidity: {
       label: "Humidité (%)",
-      color: "hsl(var(--blue-primary))",
+      color: "#3b82f6", // blue-500
     },
   }
 
@@ -409,7 +410,7 @@ export function RoomDetailPage({
                     <Line
                       type="monotone"
                       dataKey="humidity"
-                      stroke="hsl(var(--blue-primary))"
+                      stroke="#3b82f6"
                       strokeWidth={2}
                       dot={false}
                       animationDuration={300}
