@@ -358,3 +358,93 @@ export const ingestRoomReadings = async (req, res) => {
     res.status(500).json({ error: 'Erreur lors de l\'ingestion des lectures' });
   }
 };
+
+/**
+ * PUT /api/rooms/:id
+ * Met à jour le nom et/ou la description d'une salle
+ * Format: { name?: string, description?: string }
+ */
+export const updateRoom = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, description } = req.body;
+
+    // Valider qu'au moins un champ est fourni
+    if (name === undefined && description === undefined) {
+      return res.status(400).json({
+        error: 'Au moins un champ (name ou description) doit être fourni',
+        code: 'VALIDATION_ERROR'
+      });
+    }
+
+    // Valider le type de name si fourni
+    if (name !== undefined && (typeof name !== 'string' || name.trim() === '')) {
+      return res.status(400).json({
+        error: 'name doit être une chaîne non-vide',
+        code: 'VALIDATION_ERROR'
+      });
+    }
+
+    // Valider le type de description si fourni
+    if (description !== undefined && description !== null && typeof description !== 'string') {
+      return res.status(400).json({
+        error: 'description doit être une chaîne ou null',
+        code: 'VALIDATION_ERROR'
+      });
+    }
+
+    // Vérifier que la salle existe
+    const existingRoom = await prisma.room.findUnique({
+      where: { id }
+    });
+
+    if (!existingRoom) {
+      return res.status(404).json({
+        error: 'Salle non trouvée',
+        code: 'ROOM_NOT_FOUND'
+      });
+    }
+
+    // Si name est modifié, vérifier qu'il n'entre pas en conflit avec une autre salle
+    if (name && name !== existingRoom.name) {
+      const conflictingRoom = await prisma.room.findUnique({
+        where: { name: name.trim() }
+      });
+
+      if (conflictingRoom) {
+        return res.status(409).json({
+          error: `Une salle avec le nom "${name.trim()}" existe déjà`,
+          code: 'ROOM_ALREADY_EXISTS'
+        });
+      }
+    }
+
+    // Construire l'objet de mise à jour
+    const updateData = {};
+    if (name !== undefined) {
+      updateData.name = name.trim();
+    }
+    if (description !== undefined) {
+      updateData.description = description === null ? null : description.trim();
+    }
+
+    // Mettre à jour la salle
+    const updatedRoom = await prisma.room.update({
+      where: { id },
+      data: updateData
+    });
+
+    res.json({
+      success: true,
+      room: {
+        id: updatedRoom.id,
+        name: updatedRoom.name,
+        description: updatedRoom.description,
+        updatedAt: updatedRoom.updatedAt
+      }
+    });
+  } catch (error) {
+    console.error('Erreur updateRoom:', error);
+    res.status(500).json({ error: 'Erreur lors de la mise à jour de la salle' });
+  }
+};

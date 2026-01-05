@@ -3,8 +3,8 @@ import { Sidebar } from "./components/Sidebar"
 import { RoomCard } from "./components/RoomCard"
 import { Button } from "./components/ui/button"
 import { Input } from "./components/ui/input"
-import { Login } from "./components/Login"
 import { AddRoomModal } from "./components/AddRoomModal"
+import { EditRoomModal } from "./components/EditRoomModal"
 import { ThresholdModal } from "./components/ThresholdModal"
 import { RoomDetailPage } from "./components/RoomDetailPage"
 import { SettingsPage } from "./components/SettingsPage"
@@ -24,6 +24,7 @@ interface Room {
   period: string
   chartData: number[]
   category?: string
+  description?: string
 }
 
 interface ApiRoom {
@@ -81,14 +82,18 @@ const normalizeTempForChart = (temp: number) => {
   return clamp(normalized, 0.05, 0.95)
 }
 
-export default function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [loginError, setLoginError] = useState("")
+interface AppProps {
+  onLogout?: () => void
+}
+
+export default function App({ onLogout }: AppProps) {
   const [rooms, setRooms] = useState<Room[]>([])
   const [searchTerm, setSearchTerm] = useState("")
 
   // Modal states
   const [addRoomModalOpen, setAddRoomModalOpen] = useState(false)
+  const [editRoomModalOpen, setEditRoomModalOpen] = useState(false)
+  const [roomToEdit, setRoomToEdit] = useState<Room | null>(null)
   const [thresholdModalOpen, setThresholdModalOpen] = useState(false)
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null)
   const [showRoomDetail, setShowRoomDetail] = useState(false)
@@ -120,14 +125,6 @@ export default function App() {
   // Page navigation
   const [currentPage, setCurrentPage] = useState<string>("overview")
 
-  const handleLogin = (username: string, password: string) => {
-    if (username === "admin" && password === "admin") {
-      setIsAuthenticated(true)
-      setLoginError("")
-    } else {
-      setLoginError("Nom d'utilisateur ou mot de passe incorrect. Veuillez réessayer avec admin/admin.")
-    }
-  }
 
   const handleAddRoom = (newRoom: { room: string; temperature: number; humidity: number; category: string }) => {
     const room: Room = {
@@ -166,9 +163,58 @@ export default function App() {
     }
   }
 
-  useEffect(() => {
-    if (!isAuthenticated) return
+  const handleEditRoom = (roomId: string) => {
+    const room = rooms.find((r) => r.id === roomId)
+    if (room) {
+      setRoomToEdit(room)
+      setEditRoomModalOpen(true)
+    }
+  }
 
+  const handleUpdateRoom = async (roomId: string, updates: { name: string; description: string }) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/rooms/${roomId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(updates),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+
+        if (response.status === 409) {
+          throw new Error('Une salle avec ce nom existe déjà')
+        } else if (response.status === 401) {
+          throw new Error('Vous devez être connecté pour effectuer cette action')
+        } else if (response.status === 403) {
+          throw new Error('Vous n\'avez pas les permissions pour modifier cette salle')
+        } else if (errorData.error) {
+          throw new Error(errorData.error)
+        } else {
+          throw new Error(`Erreur lors de la mise à jour: ${response.status}`)
+        }
+      }
+
+      // Update local state immediately for responsive UI
+      setRooms((prevRooms) =>
+        prevRooms.map((room) =>
+          room.id === roomId
+            ? { ...room, room: updates.name, description: updates.description }
+            : room
+        )
+      )
+
+      return await response.json()
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour de la salle:', error)
+      throw error
+    }
+  }
+
+  useEffect(() => {
     let isMounted = true
     let intervalId: number
 
@@ -214,6 +260,7 @@ export default function App() {
               period: formatLastUpdate(roomFromApi.lastUpdate),
               chartData,
               category: previousRoom?.category ?? "all",
+              description: roomFromApi.description,
             }
           })
         })
@@ -229,12 +276,7 @@ export default function App() {
       isMounted = false
       window.clearInterval(intervalId)
     }
-  }, [isAuthenticated])
-
-  // Show login page if not authenticated
-  if (!isAuthenticated) {
-    return <Login onLogin={handleLogin} error={loginError} />
-  }
+  }, [])
 
   const filteredRooms = rooms.filter((room: Room) => {
     const matchesSearch = room.room.toLowerCase().includes(searchTerm.toLowerCase())
@@ -259,7 +301,7 @@ export default function App() {
 
   return (
     <div className="flex h-screen bg-background text-foreground">
-      <Sidebar currentPage={currentPage} onPageChange={setCurrentPage} />
+      <Sidebar currentPage={currentPage} onPageChange={setCurrentPage} onLogout={onLogout} />
 
       {showRoomDetail && selectedRoom ? (
         <RoomDetailPage
@@ -424,13 +466,13 @@ export default function App() {
 
                     {activeFilters.length > 0 && (
                       <>
-                        <div className="h-6 w-px bg-[#E9EAEB]" />
+                        <div className="h-6 w-px bg-border" />
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => setActiveFilters([])}
                         >
-                          <span className="text-sm font-semibold text-[#717680]">Réinitialiser tout</span>
+                          <span className="text-sm font-semibold text-muted-foreground">Réinitialiser tout</span>
                         </Button>
                       </>
                     )}
@@ -445,7 +487,7 @@ export default function App() {
                       >
                         <path
                           d={svgPaths.p272bfa00}
-                          stroke="#717680"
+                          stroke="hsl(var(--muted-foreground))"
                           strokeLinecap="round"
                           strokeLinejoin="round"
                           strokeWidth="1.66667"
@@ -464,7 +506,7 @@ export default function App() {
 
                 {activeFilters.length > 0 && (
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-[#717680]">
+                    <span className="text-sm text-muted-foreground">
                       {filteredRooms.length} {filteredRooms.length > 1 ? "salles trouvées" : "salle trouvée"}
                     </span>
                   </div>
@@ -482,6 +524,7 @@ export default function App() {
                     isSubscribed={subscribedRooms.includes(room.id)}
                     onToggleSubscription={handleToggleSubscription}
                     onClick={() => { setSelectedRoom(room); setShowRoomDetail(true); }}
+                    onEditRoom={handleEditRoom}
                   />
                 ))}
               </div>
@@ -501,10 +544,10 @@ export default function App() {
                       strokeWidth="1.5"
                     />
                   </svg>
-                  <p className="text-[#535862] text-lg mb-2">
+                  <p className="text-muted-foreground text-lg mb-2">
                     Aucune salle trouvée
                   </p>
-                  <p className="text-[#717680] text-sm">
+                  <p className="text-muted-foreground text-sm">
                     Essayez de modifier vos critères de recherche ou filtres
                   </p>
                 </div>
@@ -526,6 +569,19 @@ export default function App() {
         onOpenChange={setThresholdModalOpen}
         onSave={handleSaveThresholds}
       />
+
+      {roomToEdit && (
+        <EditRoomModal
+          open={editRoomModalOpen}
+          onOpenChange={setEditRoomModalOpen}
+          room={{
+            id: roomToEdit.id,
+            name: roomToEdit.room,
+            description: roomToEdit.description,
+          }}
+          onUpdateRoom={handleUpdateRoom}
+        />
+      )}
     </div>
   )
 }

@@ -10,9 +10,10 @@ import imgAvatar from "figma:asset/67da9fddd372b1b5b44ffef41eed6ceb810ddf8a.png"
 interface SidebarProps {
   currentPage: string
   onPageChange: (page: string) => void
+  onLogout?: () => void
 }
 
-export function Sidebar({ currentPage, onPageChange }: SidebarProps) {
+export function Sidebar({ currentPage, onPageChange, onLogout }: SidebarProps) {
   const [dashboardOpen, setDashboardOpen] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
 
@@ -261,8 +262,13 @@ export function Sidebar({ currentPage, onPageChange }: SidebarProps) {
                   Olivia Rhye
                 </p>
               </div>
-              <button className="p-2 rounded-lg hover:bg-muted transition-colors">
-                <svg className="size-5 text-muted-foreground" fill="none" viewBox="0 0 20 20">
+              <button
+                onClick={onLogout}
+                disabled={!onLogout}
+                className="p-2 rounded-lg transition-colors duration-200 hover:bg-red-100 hover:text-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Logout"
+              >
+                <svg className="size-5 fill-current" fill="none" viewBox="0 0 20 20">
                   <path
                     d={svgPaths.p17b1b80}
                     stroke="currentColor"
