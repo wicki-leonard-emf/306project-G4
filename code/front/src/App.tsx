@@ -89,6 +89,8 @@ interface AppProps {
 export default function App({ onLogout }: AppProps) {
   const [rooms, setRooms] = useState<Room[]>([])
   const [searchTerm, setSearchTerm] = useState("")
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [lastFetch, setLastFetch] = useState<Date | null>(null)
 
   // Modal states
   const [addRoomModalOpen, setAddRoomModalOpen] = useState(false)
@@ -214,63 +216,79 @@ export default function App({ onLogout }: AppProps) {
     }
   }
 
+  // Fonction de récupération des salles
+  const fetchRooms = async () => {
+    try {
+      setIsRefreshing(true)
+      const response = await fetch(`${API_BASE_URL}/api/rooms`)
+      if (!response.ok) {
+        throw new Error(`API responded with status ${response.status}`)
+      }
+
+      const data: ApiRoom[] = await response.json()
+
+      setRooms((previousRooms) => {
+        return data.map((roomFromApi) => {
+          const previousRoom = previousRooms.find((room) => room.id === roomFromApi.id)
+          const rawTemp = Number(roomFromApi.currentTemp ?? 0)
+          const rawHumidity = Number(roomFromApi.currentHumidity ?? 0)
+
+          const temperature = Number.isFinite(rawTemp) ? Math.round(rawTemp * 10) / 10 : 0
+          const humidity = Number.isFinite(rawHumidity) ? Math.round(rawHumidity) : 0
+
+          const trend: "up" | "down" =
+            previousRoom && previousRoom.temperature > temperature ? "down" : "up"
+
+          const percentage = previousRoom && previousRoom.temperature > 0
+            ? Math.round(((temperature - previousRoom.temperature) / previousRoom.temperature) * 100)
+            : 0
+
+          const normalizedValue = normalizeTempForChart(temperature)
+          const chartData = previousRoom?.chartData?.length
+            ? [...previousRoom.chartData.slice(-19), normalizedValue]
+            : Array.from({ length: 20 }, () => normalizedValue)
+
+          return {
+            id: roomFromApi.id,
+            room: roomFromApi.name ?? "Salle",
+            temperature,
+            humidity,
+            trend,
+            percentage,
+            period: formatLastUpdate(roomFromApi.lastUpdate),
+            chartData,
+            category: previousRoom?.category ?? "all",
+            description: roomFromApi.description,
+          }
+        })
+      })
+      setLastFetch(new Date())
+    } catch (error) {
+      console.error("Erreur lors de la récupération des salles:", error)
+    } finally {
+      setIsRefreshing(false)
+    }
+  }
+
+  // Fonction de rafraîchissement manuel
+  const handleManualRefresh = () => {
+    fetchRooms()
+  }
+
+  // Effet pour la récupération automatique (toutes les 60 secondes)
   useEffect(() => {
     let isMounted = true
     let intervalId: number
 
-    const fetchRooms = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/rooms`)
-        if (!response.ok) {
-          throw new Error(`API responded with status ${response.status}`)
-        }
-
-        const data: ApiRoom[] = await response.json()
-
-        if (!isMounted) return
-
-        setRooms((previousRooms) => {
-          return data.map((roomFromApi) => {
-            const previousRoom = previousRooms.find((room) => room.id === roomFromApi.id)
-            const rawTemp = Number(roomFromApi.currentTemp ?? 0)
-            const rawHumidity = Number(roomFromApi.currentHumidity ?? 0)
-
-            const temperature = Number.isFinite(rawTemp) ? Math.round(rawTemp * 10) / 10 : 0
-            const humidity = Number.isFinite(rawHumidity) ? Math.round(rawHumidity) : 0
-
-            const trend: "up" | "down" =
-              previousRoom && previousRoom.temperature > temperature ? "down" : "up"
-
-            const percentage = previousRoom && previousRoom.temperature > 0
-              ? Math.round(((temperature - previousRoom.temperature) / previousRoom.temperature) * 100)
-              : 0
-
-            const normalizedValue = normalizeTempForChart(temperature)
-            const chartData = previousRoom?.chartData?.length
-              ? [...previousRoom.chartData.slice(-19), normalizedValue]
-              : Array.from({ length: 20 }, () => normalizedValue)
-
-            return {
-              id: roomFromApi.id,
-              room: roomFromApi.name ?? "Salle",
-              temperature,
-              humidity,
-              trend,
-              percentage,
-              period: formatLastUpdate(roomFromApi.lastUpdate),
-              chartData,
-              category: previousRoom?.category ?? "all",
-              description: roomFromApi.description,
-            }
-          })
-        })
-      } catch (error) {
-        console.error("Erreur lors de la récupération des salles:", error)
+    const fetchRoomsIfMounted = async () => {
+      if (isMounted) {
+        await fetchRooms()
       }
     }
 
-    fetchRooms()
-    intervalId = window.setInterval(fetchRooms, 2000)
+    fetchRoomsIfMounted()
+    // Intervalle de 60 secondes (60000 ms) au lieu de 2 secondes
+    intervalId = window.setInterval(fetchRoomsIfMounted, 60000)
 
     return () => {
       isMounted = false
@@ -333,6 +351,11 @@ export default function App({ onLogout }: AppProps) {
                     </h1>
                     <p className="text-muted-foreground">
                       Suivez et gérez le climat des salles de classes
+                      {lastFetch && (
+                        <span className="ml-2 text-xs opacity-70">
+                          • Dernière mise à jour : {lastFetch.toLocaleTimeString('fr-FR')}
+                        </span>
+                      )}
                     </p>
                   </div>
                   <div className="flex gap-3">
@@ -368,6 +391,24 @@ export default function App({ onLogout }: AppProps) {
                           <span className="text-sm font-semibold">Mode sombre</span>
                         </div>
                       )}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={handleManualRefresh}
+                      disabled={isRefreshing}
+                    >
+                      <svg className="size-5" fill="none" viewBox="0 0 20 20">
+                        <path
+                          d="M17.5 10A7.5 7.5 0 1 1 2.5 10 7.5 7.5 0 0 1 17.5 10M13.333 8.333L10 11.667m0 0L6.667 8.333M10 11.667V3.333"
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="1.67"
+                        />
+                      </svg>
+                      <span className="text-sm font-semibold">
+                        {isRefreshing ? 'Actualisation...' : 'Rafraîchir'}
+                      </span>
                     </Button>
                     <Button variant="outline" onClick={() => setThresholdModalOpen(true)}>
                       <svg className="size-6 text-foreground" fill="none" viewBox="0 0 24 24">

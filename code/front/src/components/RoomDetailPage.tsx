@@ -34,14 +34,21 @@ export function RoomDetailPage({
   const [historicalData, setHistoricalData] = useState<Array<{ time: string, temperature: number, humidity: number }>>([])
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('4h')
   const [isLoadingHistory, setIsLoadingHistory] = useState(false)
+  const [dataCache, setDataCache] = useState<Record<TimePeriod, Array<{ time: string, temperature: number, humidity: number }>>>({} as any)
   const isHot = room.trend === "up"
   // Utiliser des couleurs réelles pour Recharts (pas de variables CSS)
   const color = isHot ? "#ef4444" : "#a855f7" // red-500 et purple-500
 
   const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "")
 
-  // Fetch historical data from API
+  // Fetch historical data from API with caching
   useEffect(() => {
+    // Si les données sont déjà en cache, les utiliser
+    if (dataCache[selectedPeriod]) {
+      setHistoricalData(dataCache[selectedPeriod])
+      return
+    }
+
     const fetchHistoricalData = async () => {
       setIsLoadingHistory(true)
       try {
@@ -80,6 +87,8 @@ export function RoomDetailPage({
         })
 
         setHistoricalData(formattedData)
+        // Mettre en cache les données
+        setDataCache(prev => ({ ...prev, [selectedPeriod]: formattedData }))
       } catch (error) {
         console.error('Erreur lors de la récupération de l\'historique:', error)
         // Fallback to simulated data if API fails
@@ -99,7 +108,7 @@ export function RoomDetailPage({
     }
 
     fetchHistoricalData()
-  }, [room.id, selectedPeriod, room.temperature, room.humidity, API_BASE_URL])
+  }, [room.id, selectedPeriod, API_BASE_URL, dataCache])
 
   const chartConfig = {
     temperature: {
