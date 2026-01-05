@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import { PrismaClient } from '@prisma/client';
+import { generateId } from '../lib/generateId.js';
 
 const prisma = new PrismaClient();
 
@@ -42,6 +43,7 @@ export const register = async (req, res) => {
     // Create user with default role ELEVE
     const user = await prisma.user.create({
       data: {
+        id: generateId(),
         email,
         password: hashedPassword,
         role: 'ELEVE'

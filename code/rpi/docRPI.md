@@ -63,7 +63,7 @@ Ce fichier est créé par `install.sh` et contient les secrets et configurations
 
 ## 🚀 Guide d'Installation Rapide
 
-1.  **Transfert des fichiers** : Copiez tout le contenu de ce dossier `rpi/` sur le Raspberry Pi.
+1.  **Transfert des fichiers** : Copiez le script install.sh sur le Raspberry Pi.
 2.  **Exécution** :
     ```bash
     chmod +x install.sh

@@ -8,7 +8,6 @@ generator client {
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
 }
 
 enum UserRole {
@@ -19,7 +18,7 @@ enum UserRole {
 
 // Modèle Utilisateur
 model User {
-  id        String   @id @default(cuid())
+  id        String   @id
   email     String   @unique
   password  String   // Hash du mot de passe
   role      UserRole @default(ELEVE)
@@ -31,7 +30,7 @@ model User {
 
 // Modèle Salle de classe
 model Room {
-  id          String   @id @default(cuid())
+  id          String   @id
   name        String   @unique
   description String?
   createdAt   DateTime @default(now())
@@ -45,7 +44,7 @@ model Room {
 
 // Modèle Capteur Phidget
 model Sensor {
-  id           String     @id @default(cuid())
+  id           String     @id
   roomId       String
   type         SensorType
   serialNumber String     @unique
@@ -67,7 +66,7 @@ enum SensorType {
 
 // Modèle Lecture de capteur
 model SensorReading {
-  id        String   @id @default(cuid())
+  id        String   @id
   sensorId  String
   value     Float
   timestamp DateTime @default(now())

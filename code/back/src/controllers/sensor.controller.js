@@ -1,4 +1,5 @@
 import { prisma } from '../models/index.js';
+import { generateId } from '../lib/generateId.js';
 
 /**
  * POST /api/sensors
@@ -58,6 +59,7 @@ export const createSensor = async (req, res) => {
     // Créer le capteur
     const sensor = await prisma.sensor.create({
       data: {
+        id: generateId(),
         roomId,
         type,
         serialNumber
@@ -163,6 +165,7 @@ export const ingestReading = async (req, res) => {
     // Créer la lecture
     const reading = await prisma.sensorReading.create({
       data: {
+        id: generateId(),
         sensorId: sensor.id,
         value
       }
