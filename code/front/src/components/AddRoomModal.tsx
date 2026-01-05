@@ -137,10 +137,10 @@ export function AddRoomModal({ open, onOpenChange, onAddRoom }: AddRoomModalProp
               </p>
             </div>
 
-            <div className="bg-[#f9f5ff] border border-[#e9d7fe] rounded-lg p-4">
+            <div className="bg-purple-light border border-purple-border rounded-lg p-4">
               <div className="flex gap-3">
                 <svg
-                  className="size-5 text-[#7f56d9] shrink-0 mt-0.5"
+                  className="size-5 text-primary shrink-0 mt-0.5"
                   fill="none"
                   viewBox="0 0 20 20"
                 >
@@ -160,10 +160,10 @@ export function AddRoomModal({ open, onOpenChange, onAddRoom }: AddRoomModalProp
                   />
                 </svg>
                 <div>
-                  <p className="text-sm font-semibold text-[#6941c6]">
+                  <p className="text-sm font-semibold text-primary">
                     Surveillance automatique
                   </p>
-                  <p className="text-xs text-[#535862] mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     Une fois ajoutée, la salle sera automatiquement surveillée
                     et vous recevrez des alertes selon les seuils configurés.
                   </p>
