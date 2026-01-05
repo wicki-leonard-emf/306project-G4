@@ -179,7 +179,7 @@ export function SettingsPage() {
                       Effacer toutes les données de température et historiques
                     </p>
                   </div>
-                  <Button variant="destructive">Supprimer</Button>
+                  <Button variant="outline" className="border-red-300 text-red-600 hover:bg-red-50">Supprimer</Button>
                 </div>
               </div>
             </div>
