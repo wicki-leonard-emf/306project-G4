@@ -14,7 +14,7 @@
     "prisma:seed": "tsx prisma/seed.ts",
     "db:seed": "prisma db seed",
     "prisma:studio": "prisma studio",
-    "vercel-build": "prisma generate && prisma migrate deploy"
+    "vercel-build": "prisma generate"
   },
   "keywords": [
     "temperature",

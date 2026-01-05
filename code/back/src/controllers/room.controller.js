@@ -7,6 +7,8 @@ import { generateId } from '../lib/generateId.js';
  */
 export const getRooms = async (req, res) => {
   try {
+    const userId = req.session?.userId || 'demo-user';
+
     const rooms = await prisma.room.findMany({
       include: {
         sensors: {
@@ -18,6 +20,10 @@ export const getRooms = async (req, res) => {
               }
             }
           }
+        },
+        subscriptions: {
+          where: { userId },
+          select: { id: true }
         }
       }
     });
@@ -49,7 +55,13 @@ export const getRooms = async (req, res) => {
         description: room.description,
         currentTemp,
         currentHumidity,
-        lastUpdate
+        lastUpdate,
+        minTemp: room.minTemp,
+        maxTemp: room.maxTemp,
+        minHumidity: room.minHumidity,
+        maxHumidity: room.maxHumidity,
+        alertDelay: room.alertDelay,
+        isSubscribed: room.subscriptions.length > 0
       };
     });
 
@@ -450,6 +462,58 @@ export const updateRoom = async (req, res) => {
   } catch (error) {
     console.error('Erreur updateRoom:', error);
     res.status(500).json({ error: 'Erreur lors de la mise à jour de la salle' });
+  }
+};
+
+/**
+ * PATCH /api/rooms/:id/thresholds
+ * Met à jour les seuils d'alerte d'une salle (admin uniquement)
+ */
+export const updateRoomThresholds = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { minTemp, maxTemp, minHumidity, maxHumidity, alertDelay } = req.body;
+
+    // Valider que la salle existe
+    const room = await prisma.room.findUnique({
+      where: { id }
+    });
+
+    if (!room) {
+      return res.status(404).json({
+        error: 'Salle non trouvée',
+        code: 'ROOM_NOT_FOUND'
+      });
+    }
+
+    // Construire l'objet de mise à jour
+    const updateData = {};
+    if (minTemp !== undefined) updateData.minTemp = parseFloat(minTemp);
+    if (maxTemp !== undefined) updateData.maxTemp = parseFloat(maxTemp);
+    if (minHumidity !== undefined) updateData.minHumidity = parseFloat(minHumidity);
+    if (maxHumidity !== undefined) updateData.maxHumidity = parseFloat(maxHumidity);
+    if (alertDelay !== undefined) updateData.alertDelay = parseInt(alertDelay);
+
+    // Mettre à jour les seuils
+    const updatedRoom = await prisma.room.update({
+      where: { id },
+      data: updateData,
+      include: {
+        sensors: {
+          include: {
+            readings: {
+              take: 1,
+              orderBy: { timestamp: 'desc' }
+            }
+          }
+        }
+      }
+    });
+
+    res.json(updatedRoom);
+  } catch (error) {
+    console.error('Erreur updateRoomThresholds:', error);
+    res.status(500).json({ error: 'Erreur lors de la mise à jour des seuils' });
   }
 };
 
