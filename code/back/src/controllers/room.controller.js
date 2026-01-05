@@ -1,4 +1,5 @@
 import { prisma } from '../models/index.js';
+import { generateId } from '../lib/generateId.js';
 
 /**
  * GET /api/rooms
@@ -192,10 +193,12 @@ export const createRoom = async (req, res) => {
     // Créer la salle et les capteurs en une transaction
     const room = await prisma.room.create({
       data: {
+        id: generateId(),
         name,
         description: description || null,
         sensors: {
           create: sensors.map(sensor => ({
+            id: generateId(),
             type: sensor.type,
             serialNumber: sensor.serialNumber
           }))
@@ -325,6 +328,7 @@ export const ingestRoomReadings = async (req, res) => {
         // Créer la lecture
         const sensorReading = await prisma.sensorReading.create({
           data: {
+            id: generateId(),
             sensorId: sensor.id,
             value
           }

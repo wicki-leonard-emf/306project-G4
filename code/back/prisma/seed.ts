@@ -1,6 +1,15 @@
 import { PrismaClient, SensorType } from '@prisma/client';
+import { customAlphabet } from 'nanoid';
 
 const prisma = new PrismaClient();
+
+// Generate short IDs
+const alphabet = '0123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+const generateId = customAlphabet(alphabet, 6);
+
+function getId() {
+  return generateId();
+}
 
 async function main() {
   console.log('🌱 Démarrage du seed...');
@@ -15,6 +24,7 @@ async function main() {
   console.log('🏛️ Création de la salle C114...');
   const room = await prisma.room.create({
     data: {
+      id: getId(),
       name: 'C114',
       description: 'Salle de classe informatique - Bâtiment C'
     }
@@ -26,6 +36,7 @@ async function main() {
 
   const tempSensor = await prisma.sensor.create({
     data: {
+      id: getId(),
       roomId: room.id,
       type: SensorType.TEMPERATURE,
       serialNumber: 'PHIDGET-TEMP-001'
@@ -35,6 +46,7 @@ async function main() {
 
   const humidityySensor = await prisma.sensor.create({
     data: {
+      id: getId(),
       roomId: room.id,
       type: SensorType.HUMIDITY,
       serialNumber: 'PHIDGET-HUM-001'
@@ -47,6 +59,7 @@ async function main() {
 
   const tempReading = await prisma.sensorReading.create({
     data: {
+      id: getId(),
       sensorId: tempSensor.id,
       value: 22.5
     }
@@ -55,6 +68,7 @@ async function main() {
 
   const humidityReading = await prisma.sensorReading.create({
     data: {
+      id: getId(),
       sensorId: humidityySensor.id,
       value: 45.0
     }
