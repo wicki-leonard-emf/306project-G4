@@ -187,9 +187,8 @@ export function NotificationsPage() {
             {mockNotifications.map((notification, index) => (
               <div
                 key={notification.id}
-                className={`flex items-center gap-3 px-[22px] py-[22px] ${
-                  index !== 0 ? "border-t border-border" : ""
-                }`}
+                className={`flex items-center gap-3 px-[22px] py-[22px] ${index !== 0 ? "border-t border-border" : ""
+                  }`}
               >
                 {/* Left: Title and details */}
                 <div className="flex flex-col gap-1 w-[271px]">
