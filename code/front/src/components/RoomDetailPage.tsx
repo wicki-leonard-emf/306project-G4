@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import { Button } from "./ui/button"
 import { Badge } from "./ui/badge"
 import { RoomThresholdModal } from "./RoomThresholdModal"
-import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "./ui/chart"
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./ui/chart"
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis, Line, LineChart } from "recharts"
 
 interface RoomDetailPageProps {
@@ -22,6 +22,8 @@ interface RoomDetailPageProps {
   onBack: () => void
 }
 
+type TimePeriod = '4h' | '1d' | '1w' | '1m'
+
 export function RoomDetailPage({
   room,
   isSubscribed,
@@ -30,31 +32,65 @@ export function RoomDetailPage({
 }: RoomDetailPageProps) {
   const [thresholdModalOpen, setThresholdModalOpen] = useState(false)
   const [historicalData, setHistoricalData] = useState<Array<{ time: string, temperature: number, humidity: number }>>([])
+  const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('4h')
   const isHot = room.trend === "up"
   const color = isHot ? "#F04438" : "#7F56D9"
 
-  // Generate historical data from chartData
+  // Generate historical data based on selected period
   useEffect(() => {
     const now = new Date()
-    const data = room.chartData.map((value, index) => {
-      const time = new Date(now.getTime() - (room.chartData.length - index - 1) * 60000) // 1 minute intervals
+    let dataPoints: number
+    let intervalMs: number
+    let timeFormat: (date: Date) => string
+
+    switch (selectedPeriod) {
+      case '4h':
+        dataPoints = 48 // 5 min intervals
+        intervalMs = 5 * 60 * 1000
+        timeFormat = (date) => date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+        break
+      case '1d':
+        dataPoints = 48 // 30 min intervals
+        intervalMs = 30 * 60 * 1000
+        timeFormat = (date) => date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+        break
+      case '1w':
+        dataPoints = 56 // 3 hour intervals
+        intervalMs = 3 * 60 * 60 * 1000
+        timeFormat = (date) => date.toLocaleDateString('fr-FR', { weekday: 'short', hour: '2-digit' })
+        break
+      case '1m':
+        dataPoints = 60 // 12 hour intervals
+        intervalMs = 12 * 60 * 60 * 1000
+        timeFormat = (date) => date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })
+        break
+    }
+
+    const data = Array.from({ length: dataPoints }, (_, index) => {
+      const time = new Date(now.getTime() - (dataPoints - index - 1) * intervalMs)
+      // Use current temperature as base and add variation
+      const baseTemp = room.temperature
+      const variation = (Math.random() - 0.5) * 4 // ±2°C variation
+      const trendEffect = room.trend === 'up' ? (index / dataPoints) * 2 : -(index / dataPoints) * 2
+
       return {
-        time: time.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
-        temperature: Math.round(value * 40 * 10) / 10, // Convert to temperature
-        humidity: room.humidity + (Math.random() - 0.5) * 10 // Simulate humidity variation
+        time: timeFormat(time),
+        temperature: Math.round((baseTemp + variation + trendEffect) * 10) / 10,
+        humidity: Math.round((room.humidity + (Math.random() - 0.5) * 15) * 10) / 10
       }
     })
+
     setHistoricalData(data)
-  }, [room.chartData, room.humidity])
+  }, [room.temperature, room.humidity, room.trend, selectedPeriod])
 
   const chartConfig = {
-    temperature: {
-      label: "Température (°C)",
-      color: color,
-    },
     humidity: {
       label: "Humidité (%)",
       color: "#1849a9",
+    },
+    temperature: {
+      label: "Température (°C)",
+      color: color,
     },
   }
 
@@ -245,11 +281,53 @@ export function RoomDetailPage({
               </div>
             </div>
 
-            {/* Charts Section - Under Construction */}
+            {/* Charts Section */}
             <div className="space-y-6">
-              <h2 className="text-xl font-semibold text-[#181d27]">
-                Graphiques de température
-              </h2>
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold text-[#181d27]">
+                  Graphiques de température
+                </h2>
+
+                {/* Period Selection Buttons */}
+                <div className="flex items-center gap-2 bg-white border border-[#E9EAEB] rounded-lg p-1">
+                  <button
+                    onClick={() => setSelectedPeriod('4h')}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${selectedPeriod === '4h'
+                      ? 'bg-[#7F56D9] text-white'
+                      : 'text-[#535862] hover:bg-gray-100'
+                      }`}
+                  >
+                    4 heures
+                  </button>
+                  <button
+                    onClick={() => setSelectedPeriod('1d')}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${selectedPeriod === '1d'
+                      ? 'bg-[#7F56D9] text-white'
+                      : 'text-[#535862] hover:bg-gray-100'
+                      }`}
+                  >
+                    1 jour
+                  </button>
+                  <button
+                    onClick={() => setSelectedPeriod('1w')}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${selectedPeriod === '1w'
+                      ? 'bg-[#7F56D9] text-white'
+                      : 'text-[#535862] hover:bg-gray-100'
+                      }`}
+                  >
+                    1 semaine
+                  </button>
+                  <button
+                    onClick={() => setSelectedPeriod('1m')}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${selectedPeriod === '1m'
+                      ? 'bg-[#7F56D9] text-white'
+                      : 'text-[#535862] hover:bg-gray-100'
+                      }`}
+                  >
+                    1 mois
+                  </button>
+                </div>
+              </div>
 
               {/* Chart 1 - Main Temperature Chart */}
               <div className="bg-white border border-[#E9EAEB] rounded-xl p-6">
@@ -258,7 +336,10 @@ export function RoomDetailPage({
                     Évolution de la température
                   </h3>
                   <p className="text-sm text-[#717680]">
-                    Données en temps réel sur les dernières minutes
+                    {selectedPeriod === '4h' && 'Données des 4 dernières heures'}
+                    {selectedPeriod === '1d' && 'Données des dernières 24 heures'}
+                    {selectedPeriod === '1w' && 'Données de la dernière semaine'}
+                    {selectedPeriod === '1m' && 'Données du dernier mois'}
                   </p>
                 </div>
                 <ChartContainer config={chartConfig} className="h-80 w-full">
@@ -316,7 +397,6 @@ export function RoomDetailPage({
                       tick={{ fill: '#717680' }}
                     />
                     <ChartTooltip content={<ChartTooltipContent />} />
-                    <ChartLegend content={<ChartLegendContent />} />
                     <Line
                       type="monotone"
                       dataKey="temperature"
@@ -324,6 +404,7 @@ export function RoomDetailPage({
                       strokeWidth={2}
                       dot={false}
                       animationDuration={300}
+                      name="Température (°C)"
                     />
                     <Line
                       type="monotone"
@@ -332,6 +413,7 @@ export function RoomDetailPage({
                       strokeWidth={2}
                       dot={false}
                       animationDuration={300}
+                      name="Humidité (%)"
                     />
                   </LineChart>
                 </ChartContainer>
