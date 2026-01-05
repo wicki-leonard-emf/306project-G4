@@ -2,6 +2,7 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+import session from 'express-session';
 import { corsOptions } from './middleware/cors.middleware.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import router from './routes/index.js';
@@ -20,6 +21,18 @@ const __dirname = path.dirname(__filename);
 app.use(corsOptions);
 app.use(express.json());
 
+// Session middleware
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'your-session-secret-change-in-production',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: false,
+    httpOnly: true,
+    maxAge: 1000 * 60 * 60 * 24 * 7
+  }
+}));
+
 // Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -33,14 +46,14 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Serve static files from frontend build (LOCAL DEVELOPMENT ONLY)
+// Serve static files from frontend build (PRODUCTION ONLY)
+// En développement, le frontend est servi par Vite sur http://localhost:5173
 // En production Vercel, les fichiers statiques sont servis par Vercel directement
-// En développement local, Express les sert
-if (!process.env.VERCEL) {
+if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
   const buildPath = path.join(__dirname, '../../front/build');
   app.use(express.static(buildPath));
 
-  // SPA fallback: serve index.html for all non-API routes (LOCAL ONLY)
+  // SPA fallback: serve index.html for all non-API routes (PRODUCTION ONLY)
   app.get('*', (req, res) => {
     res.sendFile(path.join(buildPath, 'index.html'));
   });

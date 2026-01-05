@@ -12,9 +12,10 @@ interface RoomCardProps {
   isSubscribed?: boolean
   onToggleSubscription?: (roomId: string) => void
   onClick?: () => void
+  onEditRoom?: (roomId: string) => void
 }
 
-export function RoomCard({ id, room, temperature, humidity, trend, percentage, period, chartData, isSubscribed, onToggleSubscription, onClick }: RoomCardProps) {
+export function RoomCard({ id, room, temperature, humidity, trend, percentage, period, chartData, isSubscribed, onToggleSubscription, onClick, onEditRoom }: RoomCardProps) {
   const isHot = trend === "up"
   const color = isHot ? "#F04438" : "#7F56D9"
 
@@ -70,6 +71,14 @@ export function RoomCard({ id, room, temperature, humidity, trend, percentage, p
                 </svg>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    if (onEditRoom) onEditRoom(id)
+                  }}
+                >
+                  Modifier le nom
+                </DropdownMenuItem>
                 <DropdownMenuItem>Voir les détails</DropdownMenuItem>
                 <DropdownMenuItem>Modifier le seuil</DropdownMenuItem>
                 <DropdownMenuItem>Historique</DropdownMenuItem>

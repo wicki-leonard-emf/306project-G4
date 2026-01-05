@@ -3,27 +3,41 @@ import { Button } from "./ui/button"
 import { Input } from "./ui/input"
 import imgLogo from "figma:asset/d0fc03f5c47a5583e2cfa35ac5f6aa36545efb07.png"
 
-interface LoginProps {
-  onLogin: (email: string, password: string) => void
+interface RegisterProps {
+  onRegister: (email: string, password: string) => void
+  onBackToLogin: () => void
   error?: string
-  onShowRegister?: () => void
 }
 
-export function Login({ onLogin, error, onShowRegister }: LoginProps) {
+export function Register({ onRegister, onBackToLogin, error }: RegisterProps) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const [loginError, setLoginError] = useState(error || "")
+  const [registerError, setRegisterError] = useState(error || "")
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoginError("")
+    setRegisterError("")
+
+    // Validate passwords match
+    if (password !== confirmPassword) {
+      setRegisterError("Les mots de passe ne correspondent pas")
+      return
+    }
+
+    // Validate password length
+    if (password.length < 6) {
+      setRegisterError("Le mot de passe doit contenir au moins 6 caractères")
+      return
+    }
+
     setIsLoading(true)
 
     try {
       const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "")
 
-      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+      const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -32,13 +46,13 @@ export function Login({ onLogin, error, onShowRegister }: LoginProps) {
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.error || "Erreur de connexion")
+        throw new Error(errorData.error || "Erreur lors de l'inscription")
       }
 
-      onLogin(email, password)
+      onRegister(email, password)
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Erreur de connexion"
-      setLoginError(message)
+      const message = err instanceof Error ? err.message : "Erreur lors de l'inscription"
+      setRegisterError(message)
     } finally {
       setIsLoading(false)
     }
@@ -59,15 +73,15 @@ export function Login({ onLogin, error, onShowRegister }: LoginProps) {
               />
             </div>
             <h1 className="text-2xl font-bold text-[#181d27] mb-2">
-              Bienvenue sur SensorHub
+              Créer un compte
             </h1>
             <p className="text-[#717680] text-center">
-              Connectez-vous pour accéder au tableau de bord
+              Inscrivez-vous pour accéder à SensorHub
             </p>
           </div>
 
           {/* Error Message */}
-          {loginError && (
+          {registerError && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
               <svg
                 className="size-5 text-red-600 shrink-0 mt-0.5"
@@ -84,14 +98,14 @@ export function Login({ onLogin, error, onShowRegister }: LoginProps) {
               </svg>
               <div className="flex-1">
                 <p className="text-sm font-semibold text-red-800 mb-1">
-                  Erreur de connexion
+                  Erreur
                 </p>
-                <p className="text-sm text-red-700">{loginError}</p>
+                <p className="text-sm text-red-700">{registerError}</p>
               </div>
             </div>
           )}
 
-          {/* Login Form */}
+          {/* Register Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label
@@ -121,7 +135,7 @@ export function Login({ onLogin, error, onShowRegister }: LoginProps) {
               <Input
                 id="password"
                 type="password"
-                placeholder="Entrez votre mot de passe"
+                placeholder="Entrez un mot de passe (min 6 caractères)"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
@@ -129,22 +143,35 @@ export function Login({ onLogin, error, onShowRegister }: LoginProps) {
               />
             </div>
 
-            <div className="flex items-center justify-between">
+            <div>
+              <label
+                htmlFor="confirmPassword"
+                className="block text-sm font-semibold text-[#414651] mb-2"
+              >
+                Confirmer le mot de passe
+              </label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="Confirmez votre mot de passe"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                disabled={isLoading}
+                required
+              />
+            </div>
+
+            <div>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
                   className="size-4 rounded border-[#d5d7da] text-[#7f56d9] focus:ring-[#7f56d9]"
+                  required
                 />
                 <span className="text-sm text-[#535862]">
-                  Se souvenir de moi
+                  J'accepte les conditions d'utilisation et la politique de confidentialité
                 </span>
               </label>
-              <button
-                type="button"
-                className="text-sm font-semibold text-[#7f56d9] hover:text-[#6941c6] transition-colors"
-              >
-                Mot de passe oublié ?
-              </button>
             </div>
 
             <Button
@@ -174,10 +201,10 @@ export function Login({ onLogin, error, onShowRegister }: LoginProps) {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     />
                   </svg>
-                  <span>Connexion en cours...</span>
+                  <span>Inscription en cours...</span>
                 </>
               ) : (
-                <span>Se connecter</span>
+                <span>Créer un compte</span>
               )}
             </Button>
           </form>
@@ -185,7 +212,7 @@ export function Login({ onLogin, error, onShowRegister }: LoginProps) {
           {/* Footer */}
           <div className="mt-8 text-center">
             <p className="text-xs text-[#717680]">
-              En vous connectant, vous acceptez nos{" "}
+              En créant un compte, vous acceptez nos{" "}
               <button className="text-[#7f56d9] hover:underline font-semibold">
                 conditions d'utilisation
               </button>{" "}
@@ -200,13 +227,13 @@ export function Login({ onLogin, error, onShowRegister }: LoginProps) {
         {/* Bottom Links */}
         <div className="mt-6 text-center">
           <p className="text-sm text-white/90">
-            Vous n'avez pas de compte ?{" "}
+            Vous avez déjà un compte ?{" "}
             <button
               type="button"
-              onClick={onShowRegister}
+              onClick={onBackToLogin}
               className="font-bold hover:underline"
             >
-              Créer un compte
+              Se connecter
             </button>
           </p>
         </div>
