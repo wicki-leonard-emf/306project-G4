@@ -111,36 +111,36 @@ export function NotificationsPage() {
   const getBadgeColor = (type: Notification["type"]) => {
     switch (type) {
       case "error":
-        return "bg-[#D92D20]"
+        return "bg-destructive"
       case "warning":
-        return "bg-[#F79009]"
+        return "bg-warning"
       case "success":
-        return "bg-[#039855]"
+        return "bg-success"
       case "info":
       default:
-        return "bg-[#6941C6]"
+        return "bg-primary"
     }
   }
 
   return (
-    <div className="flex-1 overflow-auto bg-[#FAFAFA]">
+    <div className="flex-1 overflow-auto bg-background">
       <div className="flex flex-col h-full">
         {/* Header */}
-        <div className="bg-white border-b border-[#E9EAEB]">
+        <div className="bg-card border-b border-border">
           <div className="px-8 py-8">
             <div className="flex items-center justify-between">
               <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-3">
-                  <h1 className="text-[30px] leading-[38px] font-semibold text-[#181d27] tracking-[0.4px]">
+                  <h1 className="text-[30px] leading-[38px] font-semibold text-foreground tracking-[0.4px]">
                     Notifications
                   </h1>
                   {unreadCount > 0 && (
-                    <div className="bg-[#f5f5f5] rounded-full px-2.5 py-1 h-7 flex items-center justify-center min-w-[28px]">
-                      <span className="text-sm font-medium text-[#414651]">{unreadCount}</span>
+                    <div className="bg-muted rounded-full px-2.5 py-1 h-7 flex items-center justify-center min-w-[28px]">
+                      <span className="text-sm font-medium text-foreground">{unreadCount}</span>
                     </div>
                   )}
                 </div>
-                <p className="text-[#535862] tracking-[-0.3125px]">
+                <p className="text-muted-foreground tracking-[-0.3125px]">
                   Consultez toutes vos alertes et notifications système
                 </p>
               </div>
@@ -183,12 +183,12 @@ export function NotificationsPage() {
 
         {/* Content */}
         <div className="flex-1 px-8 py-8">
-          <div className="bg-white border border-[#E9EAEB] rounded-[10px] overflow-hidden">
+          <div className="bg-card border border-border rounded-[10px] overflow-hidden">
             {mockNotifications.map((notification, index) => (
               <div
                 key={notification.id}
                 className={`flex items-center gap-3 px-[22px] py-[22px] ${
-                  index !== 0 ? "border-t border-[#E9EAEB]" : ""
+                  index !== 0 ? "border-t border-border" : ""
                 }`}
               >
                 {/* Left: Title and details */}
@@ -196,7 +196,7 @@ export function NotificationsPage() {
                   <h3 className="font-semibold text-[#181d27] tracking-[-0.3125px]">
                     {notification.title}
                   </h3>
-                  <p className="text-xs text-[#717680] leading-4">
+                  <p className="text-xs text-muted-foreground leading-4">
                     {notification.details}
                   </p>
                 </div>
@@ -209,7 +209,7 @@ export function NotificationsPage() {
                       {notification.category}
                     </span>
                   </div>
-                  <p className="text-xs text-[#A4A7AE] leading-4">
+                  <p className="text-xs text-muted-foreground/60 leading-4">
                     {notification.timestamp}
                   </p>
                 </div>
@@ -218,13 +218,13 @@ export function NotificationsPage() {
                 <div className="flex items-center gap-3 ml-auto">
                   {!notification.read && (
                     <>
-                      <button className="text-xs text-[#717680] hover:text-[#181d27] leading-4">
+                      <button className="text-xs text-muted-foreground hover:text-foreground leading-4">
                         Marquer comme lu
                       </button>
-                      <span className="text-xs text-[#E9EAEB]">•</span>
+                      <span className="text-xs text-border">•</span>
                     </>
                   )}
-                  <button className="text-xs text-[#717680] hover:text-[#181d27] leading-4">
+                  <button className="text-xs text-muted-foreground hover:text-foreground leading-4">
                     Voir la salle
                   </button>
                 </div>

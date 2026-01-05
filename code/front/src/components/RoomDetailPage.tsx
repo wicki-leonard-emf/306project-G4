@@ -34,7 +34,7 @@ export function RoomDetailPage({
   const [historicalData, setHistoricalData] = useState<Array<{ time: string, temperature: number, humidity: number }>>([])
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('4h')
   const isHot = room.trend === "up"
-  const color = isHot ? "#F04438" : "#7F56D9"
+  const color = isHot ? "hsl(var(--destructive))" : "hsl(var(--primary))"
 
   // Generate historical data based on selected period
   useEffect(() => {
@@ -84,13 +84,13 @@ export function RoomDetailPage({
   }, [room.temperature, room.humidity, room.trend, selectedPeriod])
 
   const chartConfig = {
-    humidity: {
-      label: "Humidité (%)",
-      color: "#1849a9",
-    },
     temperature: {
       label: "Température (°C)",
       color: color,
+    },
+    humidity: {
+      label: "Humidité (%)",
+      color: "hsl(var(--blue-primary))",
     },
   }
 
@@ -198,14 +198,14 @@ export function RoomDetailPage({
         <div className="flex-1 p-8">
           <div className="max-w-6xl mx-auto space-y-6">
             {/* Current Temperature Section */}
-            <div className="bg-gradient-to-br from-[#f9f5ff] to-white border border-[#e9d7fe] rounded-xl p-8">
+            <div className="bg-gradient-to-br from-purple-light to-background border border-purple-border rounded-xl p-8">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-[#6941c6] mb-3">
+                  <p className="text-sm font-semibold text-primary mb-3">
                     Température actuelle
                   </p>
                   <div className="flex items-end gap-4">
-                    <span className="text-6xl font-normal text-[#181d27]">
+                    <span className="text-6xl font-normal text-foreground">
                       {room.temperature}°
                     </span>
                     <div className="flex items-center gap-2 mb-3">
@@ -231,14 +231,14 @@ export function RoomDetailPage({
                       <span className="text-base font-semibold" style={{ color }}>
                         {room.percentage}%
                       </span>
-                      <span className="text-base text-[#535862]">
+                      <span className="text-base text-muted-foreground">
                         {room.period}
                       </span>
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-[#e9d7fe] shadow-sm">
-                  <svg className="size-5 text-[#1849a9]" viewBox="0 0 20 20" fill="none">
+                <div className="flex items-center gap-2 px-3 py-2 bg-card rounded-lg border border-purple-border shadow-sm">
+                  <svg className="size-5 text-blue-primary" viewBox="0 0 20 20" fill="none">
                     <path
                       d="M10 18c2.7614 0 5-2.2386 5-5 0-2.582-2.3651-6.0145-4.0678-8.0363-.5157-.6358-1.349-.6358-1.8647 0C7.3651 6.9855 5 10.418 5 13c0 2.7614 2.2386 5 5 5Z"
                       stroke="currentColor"
@@ -248,8 +248,8 @@ export function RoomDetailPage({
                     />
                   </svg>
                   <div>
-                    <p className="text-xs text-[#535862] leading-tight">Humidité</p>
-                    <p className="text-lg font-semibold text-[#1849a9]">{room.humidity}%</p>
+                    <p className="text-xs text-muted-foreground leading-tight">Humidité</p>
+                    <p className="text-lg font-semibold text-blue-primary">{room.humidity}%</p>
                   </div>
                 </div>
               </div>
@@ -257,44 +257,44 @@ export function RoomDetailPage({
 
             {/* Statistics Grid */}
             <div className="grid grid-cols-4 gap-6">
-              <div className="bg-white border border-[#E9EAEB] rounded-xl p-6">
-                <p className="text-sm text-[#717680] mb-2">Température min</p>
-                <p className="text-3xl font-semibold text-[#181d27]">11°C</p>
-                <p className="text-sm text-[#535862] mt-2">Dernières 24h</p>
+              <div className="bg-card border border-border rounded-xl p-6">
+                <p className="text-sm text-muted-foreground mb-2">Température min</p>
+                <p className="text-3xl font-semibold text-foreground">11°C</p>
+                <p className="text-sm text-muted-foreground mt-2">Dernières 24h</p>
               </div>
-              <div className="bg-white border border-[#E9EAEB] rounded-xl p-6">
-                <p className="text-sm text-[#717680] mb-2">Température max</p>
-                <p className="text-3xl font-semibold text-[#181d27]">26°C</p>
-                <p className="text-sm text-[#535862] mt-2">Dernières 24h</p>
+              <div className="bg-card border border-border rounded-xl p-6">
+                <p className="text-sm text-muted-foreground mb-2">Température max</p>
+                <p className="text-3xl font-semibold text-foreground">26°C</p>
+                <p className="text-sm text-muted-foreground mt-2">Dernières 24h</p>
               </div>
-              <div className="bg-white border border-[#E9EAEB] rounded-xl p-6">
-                <p className="text-sm text-[#717680] mb-2">Humidité</p>
-                <p className="text-3xl font-semibold text-[#181d27]">{room.humidity}%</p>
-                <p className="text-sm text-[#535862] mt-2">Relatif actuel</p>
+              <div className="bg-card border border-border rounded-xl p-6">
+                <p className="text-sm text-muted-foreground mb-2">Humidité</p>
+                <p className="text-3xl font-semibold text-foreground">{room.humidity}%</p>
+                <p className="text-sm text-muted-foreground mt-2">Relatif actuel</p>
               </div>
-              <div className="bg-white border border-[#E9EAEB] rounded-xl p-6">
-                <p className="text-sm text-[#717680] mb-2">Température moy</p>
-                <p className="text-3xl font-semibold text-[#181d27]">
+              <div className="bg-card border border-border rounded-xl p-6">
+                <p className="text-sm text-muted-foreground mb-2">Température moy</p>
+                <p className="text-3xl font-semibold text-foreground">
                   {room.temperature}°C
                 </p>
-                <p className="text-sm text-[#535862] mt-2">Dernières 24h</p>
+                <p className="text-sm text-muted-foreground mt-2">Dernières 24h</p>
               </div>
             </div>
 
             {/* Charts Section */}
             <div className="space-y-6">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold text-[#181d27]">
+                <h2 className="text-xl font-semibold text-foreground">
                   Graphiques de température
                 </h2>
 
                 {/* Period Selection Buttons */}
-                <div className="flex items-center gap-2 bg-white border border-[#E9EAEB] rounded-lg p-1">
+                <div className="flex items-center gap-2 bg-card border border-border rounded-lg p-1">
                   <button
                     onClick={() => setSelectedPeriod('4h')}
                     className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${selectedPeriod === '4h'
-                      ? 'bg-[#7F56D9] text-white'
-                      : 'text-[#535862] hover:bg-gray-100'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:bg-muted'
                       }`}
                   >
                     4 heures
@@ -302,8 +302,8 @@ export function RoomDetailPage({
                   <button
                     onClick={() => setSelectedPeriod('1d')}
                     className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${selectedPeriod === '1d'
-                      ? 'bg-[#7F56D9] text-white'
-                      : 'text-[#535862] hover:bg-gray-100'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:bg-muted'
                       }`}
                   >
                     1 jour
@@ -311,8 +311,8 @@ export function RoomDetailPage({
                   <button
                     onClick={() => setSelectedPeriod('1w')}
                     className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${selectedPeriod === '1w'
-                      ? 'bg-[#7F56D9] text-white'
-                      : 'text-[#535862] hover:bg-gray-100'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:bg-muted'
                       }`}
                   >
                     1 semaine
@@ -320,8 +320,8 @@ export function RoomDetailPage({
                   <button
                     onClick={() => setSelectedPeriod('1m')}
                     className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${selectedPeriod === '1m'
-                      ? 'bg-[#7F56D9] text-white'
-                      : 'text-[#535862] hover:bg-gray-100'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:bg-muted'
                       }`}
                   >
                     1 mois
@@ -330,12 +330,12 @@ export function RoomDetailPage({
               </div>
 
               {/* Chart 1 - Main Temperature Chart */}
-              <div className="bg-white border border-[#E9EAEB] rounded-xl p-6">
+              <div className="bg-card border border-border rounded-xl p-6">
                 <div className="mb-4">
-                  <h3 className="text-lg font-semibold text-[#181d27] mb-1">
+                  <h3 className="text-lg font-semibold text-foreground mb-1">
                     Évolution de la température
                   </h3>
-                  <p className="text-sm text-[#717680]">
+                  <p className="text-sm text-muted-foreground">
                     {selectedPeriod === '4h' && 'Données des 4 dernières heures'}
                     {selectedPeriod === '1d' && 'Données des dernières 24 heures'}
                     {selectedPeriod === '1w' && 'Données de la dernière semaine'}
@@ -354,12 +354,12 @@ export function RoomDetailPage({
                     <XAxis
                       dataKey="time"
                       className="text-xs"
-                      tick={{ fill: '#717680' }}
+                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
                     />
                     <YAxis
                       className="text-xs"
-                      tick={{ fill: '#717680' }}
-                      label={{ value: '°C', angle: -90, position: 'insideLeft', style: { fill: '#717680' } }}
+                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                      label={{ value: '°C', angle: -90, position: 'insideLeft', style: { fill: 'hsl(var(--muted-foreground))' } }}
                     />
                     <ChartTooltip content={<ChartTooltipContent />} />
                     <Area
@@ -375,12 +375,12 @@ export function RoomDetailPage({
               </div>
 
               {/* Chart 2 - Humidity Analysis */}
-              <div className="bg-white border border-[#E9EAEB] rounded-xl p-6">
+              <div className="bg-card border border-border rounded-xl p-6">
                 <div className="mb-4">
-                  <h3 className="text-lg font-semibold text-[#181d27] mb-1">
+                  <h3 className="text-lg font-semibold text-foreground mb-1">
                     Température et Humidité
                   </h3>
-                  <p className="text-sm text-[#717680]">
+                  <p className="text-sm text-muted-foreground">
                     Comparaison des deux métriques
                   </p>
                 </div>
@@ -390,11 +390,11 @@ export function RoomDetailPage({
                     <XAxis
                       dataKey="time"
                       className="text-xs"
-                      tick={{ fill: '#717680' }}
+                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
                     />
                     <YAxis
                       className="text-xs"
-                      tick={{ fill: '#717680' }}
+                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
                     />
                     <ChartTooltip content={<ChartTooltipContent />} />
                     <Line
@@ -409,7 +409,7 @@ export function RoomDetailPage({
                     <Line
                       type="monotone"
                       dataKey="humidity"
-                      stroke="#1849a9"
+                      stroke="hsl(var(--blue-primary))"
                       strokeWidth={2}
                       dot={false}
                       animationDuration={300}

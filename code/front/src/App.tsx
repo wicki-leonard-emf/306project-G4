@@ -424,13 +424,13 @@ export default function App() {
 
                     {activeFilters.length > 0 && (
                       <>
-                        <div className="h-6 w-px bg-[#E9EAEB]" />
+                        <div className="h-6 w-px bg-border" />
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => setActiveFilters([])}
                         >
-                          <span className="text-sm font-semibold text-[#717680]">Réinitialiser tout</span>
+                          <span className="text-sm font-semibold text-muted-foreground">Réinitialiser tout</span>
                         </Button>
                       </>
                     )}
@@ -445,7 +445,7 @@ export default function App() {
                       >
                         <path
                           d={svgPaths.p272bfa00}
-                          stroke="#717680"
+                          stroke="hsl(var(--muted-foreground))"
                           strokeLinecap="round"
                           strokeLinejoin="round"
                           strokeWidth="1.66667"
@@ -464,7 +464,7 @@ export default function App() {
 
                 {activeFilters.length > 0 && (
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-[#717680]">
+                    <span className="text-sm text-muted-foreground">
                       {filteredRooms.length} {filteredRooms.length > 1 ? "salles trouvées" : "salle trouvée"}
                     </span>
                   </div>
@@ -501,10 +501,10 @@ export default function App() {
                       strokeWidth="1.5"
                     />
                   </svg>
-                  <p className="text-[#535862] text-lg mb-2">
+                  <p className="text-muted-foreground text-lg mb-2">
                     Aucune salle trouvée
                   </p>
-                  <p className="text-[#717680] text-sm">
+                  <p className="text-muted-foreground text-sm">
                     Essayez de modifier vos critères de recherche ou filtres
                   </p>
                 </div>
