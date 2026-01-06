@@ -412,25 +412,25 @@ export default function App({ onLogout }: AppProps) {
       <div className="flex h-screen bg-background text-foreground">
         <Sidebar currentPage={currentPage} onPageChange={setCurrentPage} onLogout={onLogout} userRole={userRole} />
 
-        {showRoomDetail && selectedRoom ? (
-          <RoomDetailPage
-            room={selectedRoom}
-            isSubscribed={subscribedRooms.includes(selectedRoom.id)}
-            onToggleSubscription={handleToggleSubscription}
-            onBack={() => setShowRoomDetail(false)}
-          />
-        ) : currentPage === "settings" ? (
-          <SettingsPage />
-        ) : currentPage === "notifications" ? (
-          <NotificationsPage />
-        ) : currentPage === "users" ? (
-          <UsersPage />
-        ) : currentPage === "transactionHistory" ? (
-          <TransactionHistoryPage />
-        ) : currentPage === "documentation" ? (
-          <DocumentationPage />
-        ) : (
-          <div className="flex-1 overflow-auto">
+        <div className="flex-1 overflow-auto">
+          {showRoomDetail && selectedRoom ? (
+            <RoomDetailPage
+              room={selectedRoom}
+              isSubscribed={subscribedRooms.includes(selectedRoom.id)}
+              onToggleSubscription={handleToggleSubscription}
+              onBack={() => setShowRoomDetail(false)}
+            />
+          ) : currentPage === "settings" ? (
+            <SettingsPage />
+          ) : currentPage === "notifications" ? (
+            <NotificationsPage />
+          ) : currentPage === "users" ? (
+            <UsersPage />
+          ) : currentPage === "transactionHistory" ? (
+            <TransactionHistoryPage />
+          ) : currentPage === "documentation" ? (
+            <DocumentationPage />
+          ) : (
             <div className="flex flex-col h-full">
               {/* Header */}
               <div className="bg-card border-b border-border">
@@ -686,8 +686,8 @@ export default function App({ onLogout }: AppProps) {
                 )}
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Modals */}
         <AddRoomModal

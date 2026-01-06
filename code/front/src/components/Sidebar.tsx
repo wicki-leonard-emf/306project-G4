@@ -41,19 +41,6 @@ export function Sidebar({ currentPage, onPageChange, onLogout, userRole }: Sideb
           />
           <span className="text-xl font-semibold">SensorHub</span>
         </div>
-        
-        <div className="px-2 py-2">
-          <div className="relative">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder="Recherche"
-              className="pl-8"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-        </div>
       </SidebarHeader>
 
       <SidebarContent>
@@ -61,7 +48,7 @@ export function Sidebar({ currentPage, onPageChange, onLogout, userRole }: Sideb
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton 
+                <SidebarMenuButton
                   onClick={() => onPageChange("home")}
                   isActive={currentPage === "home"}
                 >
@@ -84,7 +71,7 @@ export function Sidebar({ currentPage, onPageChange, onLogout, userRole }: Sideb
                   <CollapsibleContent>
                     <SidebarMenuSub>
                       <SidebarMenuSubItem>
-                        <SidebarMenuSubButton 
+                        <SidebarMenuSubButton
                           onClick={() => onPageChange("overview")}
                           isActive={currentPage === "overview"}
                         >
@@ -92,7 +79,7 @@ export function Sidebar({ currentPage, onPageChange, onLogout, userRole }: Sideb
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>
                       <SidebarMenuSubItem>
-                        <SidebarMenuSubButton 
+                        <SidebarMenuSubButton
                           onClick={() => onPageChange("notifications")}
                           isActive={currentPage === "notifications"}
                         >
@@ -102,7 +89,7 @@ export function Sidebar({ currentPage, onPageChange, onLogout, userRole }: Sideb
                       </SidebarMenuSubItem>
                       {userRole === "ADMIN" && (
                         <SidebarMenuSubItem>
-                          <SidebarMenuSubButton 
+                          <SidebarMenuSubButton
                             onClick={() => onPageChange("transactionHistory")}
                             isActive={currentPage === "transactionHistory"}
                           >
@@ -118,7 +105,7 @@ export function Sidebar({ currentPage, onPageChange, onLogout, userRole }: Sideb
 
               {userRole === "ADMIN" && (
                 <SidebarMenuItem>
-                  <SidebarMenuButton 
+                  <SidebarMenuButton
                     onClick={() => onPageChange("users")}
                     isActive={currentPage === "users"}
                   >
@@ -129,7 +116,7 @@ export function Sidebar({ currentPage, onPageChange, onLogout, userRole }: Sideb
               )}
 
               <SidebarMenuItem>
-                <SidebarMenuButton 
+                <SidebarMenuButton
                   onClick={() => onPageChange("documentation")}
                   isActive={currentPage === "documentation"}
                 >
@@ -139,7 +126,7 @@ export function Sidebar({ currentPage, onPageChange, onLogout, userRole }: Sideb
               </SidebarMenuItem>
 
               <SidebarMenuItem>
-                <SidebarMenuButton 
+                <SidebarMenuButton
                   onClick={() => onPageChange("settings")}
                   isActive={currentPage === "settings"}
                 >
