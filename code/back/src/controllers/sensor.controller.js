@@ -213,11 +213,11 @@ async function checkThresholdsAndAlert(sensor, value) {
   try {
     const room = sensor.room;
     const sensorType = sensor.type;
-    
+
     // Déterminer les seuils selon le type de capteur
     let minThreshold = null;
     let maxThreshold = null;
-    
+
     if (sensorType === 'TEMPERATURE') {
       minThreshold = room.minTemp;
       maxThreshold = room.maxTemp;
@@ -301,7 +301,7 @@ async function checkThresholdsAndAlert(sensor, value) {
           recipientCount: recipients.length
         }
       });
-      
+
       console.log(`✅ Alerte envoyée et enregistrée pour ${room.name}`);
     }
 
