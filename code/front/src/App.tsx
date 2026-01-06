@@ -93,7 +93,7 @@ export default function App({ onLogout }: AppProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [lastFetch, setLastFetch] = useState<Date | null>(null)
-  const [userRole, setUserRole] = useState<string>("ELEVE")
+  const [userRole, setUserRole] = useState<string>("ADMIN") // Temporairement en ADMIN pour debug
 
   // Modal states
   const [addRoomModalOpen, setAddRoomModalOpen] = useState(false)
@@ -253,6 +253,57 @@ export default function App({ onLogout }: AppProps) {
         description: error instanceof Error ? error.message : 'Impossible de modifier la salle'
       })
       throw error
+    }
+  }
+
+  const handleDeleteRoom = async (roomId: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/rooms/${roomId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+
+        if (response.status === 401) {
+          throw new Error('Vous devez être connecté pour effectuer cette action')
+        } else if (response.status === 403) {
+          throw new Error('Vous n\'avez pas les permissions pour supprimer cette salle')
+        } else if (response.status === 404) {
+          throw new Error('Salle introuvable')
+        } else if (errorData.error) {
+          throw new Error(errorData.error)
+        } else {
+          throw new Error(`Erreur lors de la suppression: ${response.status}`)
+        }
+      }
+
+      // Update local state immediately for responsive UI
+      setRooms((prevRooms) => prevRooms.filter((room) => room.id !== roomId))
+
+      toast.success('Salle supprimée', {
+        description: 'La salle a été supprimée avec succès'
+      })
+
+      return await response.json()
+    } catch (error) {
+      console.error('Erreur lors de la suppression de la salle:', error)
+      toast.error('Erreur lors de la suppression', {
+        description: error instanceof Error ? error.message : 'Impossible de supprimer la salle'
+      })
+      throw error
+    }
+  }
+
+  const handleEditThreshold = (roomId: string) => {
+    const room = rooms.find((r) => r.id === roomId)
+    if (room) {
+      setSelectedRoom(room)
+      setThresholdModalOpen(true)
     }
   }
 
@@ -657,6 +708,9 @@ export default function App({ onLogout }: AppProps) {
                       onToggleSubscription={handleToggleSubscription}
                       onClick={() => { setSelectedRoom(room); setShowRoomDetail(true); }}
                       onEditRoom={handleEditRoom}
+                      onDeleteRoom={handleDeleteRoom}
+                      onEditThreshold={handleEditThreshold}
+                      userRole={userRole}
                     />
                   ))}
                 </div>
