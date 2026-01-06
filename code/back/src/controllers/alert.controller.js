@@ -90,7 +90,7 @@ export const getAllAlerts = async (req, res, next) => {
  * @desc Supprimer une alerte
  * @access Private/Admin
  */
-exports.deleteAlert = async (req, res, next) => {
+export const deleteAlert = async (req, res, next) => {
     try {
         const { id } = req.params;
 
@@ -110,7 +110,7 @@ exports.deleteAlert = async (req, res, next) => {
  * @desc Supprimer toutes les alertes (ou toutes les alertes de l'utilisateur)
  * @access Private
  */
-exports.deleteAllAlerts = async (req, res, next) => {
+export const deleteAllAlerts = async (req, res, next) => {
     try {
         const userId = req.user.id;
         const isAdmin = req.user.role === 'ADMIN';
