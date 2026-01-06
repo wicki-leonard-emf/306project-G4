@@ -80,7 +80,7 @@ const DropdownMenuContent = React.forwardRef<HTMLDivElement, DropdownMenuContent
         ref={ref}
         role="menu"
         className={cn(
-          "absolute right-0 mt-2 w-48 origin-top-right rounded-lg bg-white border border-[#d5d7da] shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50",
+          "absolute top-full right-0 mt-2 w-48 origin-top-right rounded-lg bg-white dark:bg-slate-950 border border-[#d5d7da] dark:border-slate-700 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-[9999]",
           className
         )}
       >
