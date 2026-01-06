@@ -20,7 +20,7 @@ const Collapsible = React.forwardRef<HTMLDivElement, CollapsibleProps>(
   ({ children, className, defaultOpen = false, open: controlledOpen, onOpenChange }, ref) => {
     const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen)
     const open = controlledOpen !== undefined ? controlledOpen : uncontrolledOpen
-    
+
     const setOpen = React.useCallback((newOpen: boolean) => {
       if (controlledOpen === undefined) {
         setUncontrolledOpen(newOpen)
@@ -47,7 +47,7 @@ interface CollapsibleTriggerProps extends React.ButtonHTMLAttributes<HTMLButtonE
 const CollapsibleTrigger = React.forwardRef<HTMLButtonElement, CollapsibleTriggerProps>(
   ({ children, className, asChild, onClick, ...props }, ref) => {
     const context = React.useContext(CollapsibleContext)
-    
+
     if (!context) {
       throw new Error("CollapsibleTrigger must be used within a Collapsible")
     }
@@ -85,7 +85,7 @@ interface CollapsibleContentProps {
 const CollapsibleContent = React.forwardRef<HTMLDivElement, CollapsibleContentProps>(
   ({ children, className }, ref) => {
     const context = React.useContext(CollapsibleContext)
-    
+
     if (!context) {
       throw new Error("CollapsibleContent must be used within a Collapsible")
     }
