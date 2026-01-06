@@ -1,4 +1,4 @@
-const { PrismaClient } = require('@prisma/client');
+import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 /**
@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
  * @desc Récupérer toutes les alertes pour les salles auxquelles l'utilisateur est abonné
  * @access Private
  */
-exports.getMyAlerts = async (req, res, next) => {
+export const getMyAlerts = async (req, res, next) => {
     try {
         const userId = req.user.id;
 
@@ -56,7 +56,7 @@ exports.getMyAlerts = async (req, res, next) => {
  * @desc Récupérer toutes les alertes (admin seulement)
  * @access Private/Admin
  */
-exports.getAllAlerts = async (req, res, next) => {
+export const getAllAlerts = async (req, res, next) => {
     try {
         const { roomId, limit = 50 } = req.query;
 
