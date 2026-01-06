@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { Sidebar } from "./components/Sidebar"
+import { SidebarProvider } from "./components/ui/sidebar"
 import { RoomCard } from "./components/RoomCard"
 import { Button } from "./components/ui/button"
 import { Input } from "./components/ui/input"
@@ -92,7 +93,7 @@ export default function App({ onLogout }: AppProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [lastFetch, setLastFetch] = useState<Date | null>(null)
-  const [userRole, setUserRole] = useState<string>("ELEVE")
+  const [userRole, setUserRole] = useState<string>("ADMIN") // Temporairement en ADMIN pour debug
 
   // Modal states
   const [addRoomModalOpen, setAddRoomModalOpen] = useState(false)
@@ -255,6 +256,57 @@ export default function App({ onLogout }: AppProps) {
     }
   }
 
+  const handleDeleteRoom = async (roomId: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/rooms/${roomId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+
+        if (response.status === 401) {
+          throw new Error('Vous devez être connecté pour effectuer cette action')
+        } else if (response.status === 403) {
+          throw new Error('Vous n\'avez pas les permissions pour supprimer cette salle')
+        } else if (response.status === 404) {
+          throw new Error('Salle introuvable')
+        } else if (errorData.error) {
+          throw new Error(errorData.error)
+        } else {
+          throw new Error(`Erreur lors de la suppression: ${response.status}`)
+        }
+      }
+
+      // Update local state immediately for responsive UI
+      setRooms((prevRooms) => prevRooms.filter((room) => room.id !== roomId))
+
+      toast.success('Salle supprimée', {
+        description: 'La salle a été supprimée avec succès'
+      })
+
+      return await response.json()
+    } catch (error) {
+      console.error('Erreur lors de la suppression de la salle:', error)
+      toast.error('Erreur lors de la suppression', {
+        description: error instanceof Error ? error.message : 'Impossible de supprimer la salle'
+      })
+      throw error
+    }
+  }
+
+  const handleEditThreshold = (roomId: string) => {
+    const room = rooms.find((r) => r.id === roomId)
+    if (room) {
+      setSelectedRoom(room)
+      setThresholdModalOpen(true)
+    }
+  }
+
   // Fonction de récupération des salles
   const fetchRooms = async () => {
     try {
@@ -407,311 +459,316 @@ export default function App({ onLogout }: AppProps) {
   })
 
   return (
-    <div className="flex h-screen bg-background text-foreground">
-      <Sidebar currentPage={currentPage} onPageChange={setCurrentPage} onLogout={onLogout} />
+    <SidebarProvider>
+      <div className="flex h-screen bg-background text-foreground">
+        <Sidebar currentPage={currentPage} onPageChange={setCurrentPage} onLogout={onLogout} userRole={userRole} />
 
-      {showRoomDetail && selectedRoom ? (
-        <RoomDetailPage
-          room={selectedRoom}
-          isSubscribed={subscribedRooms.includes(selectedRoom.id)}
-          onToggleSubscription={handleToggleSubscription}
-          onBack={() => setShowRoomDetail(false)}
-        />
-      ) : currentPage === "settings" ? (
-      <SettingsPage />
-      ) : currentPage === "notifications" ? (
-      <NotificationsPage />
-      ) : currentPage === "users" ? (
-      <UsersPage />
-      ) : currentPage === "transactionHistory" ? (
-      <TransactionHistoryPage />
-      ) : currentPage === "documentation" ? (
-      <DocumentationPage />
-      ) : (
-      <div className="flex-1 overflow-auto">
-        <div className="flex flex-col h-full">
-          {/* Header */}
-          <div className="bg-card border-b border-border">
-            <div className="px-8 py-8">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1">
-                  <h1 className="text-[30px] leading-[38px] font-semibold text-foreground mb-1">
-                    Bon retour, Olivia
-                  </h1>
-                  <p className="text-muted-foreground">
-                    Suivez et gérez le climat des salles de classes
-                    {lastFetch && (
-                      <span className="ml-2 text-xs opacity-70">
-                        • Dernière mise à jour : {lastFetch.toLocaleTimeString('fr-FR')}
-                      </span>
-                    )}
-                  </p>
-                </div>
-                <div className="flex gap-3">
-                  <Button
-                    variant="outline"
-                    onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                    className="shrink-0"
-                  >
-                    {theme === "dark" ? (
-                      <div className="flex items-center gap-2">
-                        <svg className="size-5" viewBox="0 0 24 24" fill="none">
-                          <path
-                            d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"
-                            stroke="currentColor"
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                        <span className="text-sm font-semibold">Mode clair</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <svg className="size-5" viewBox="0 0 24 24" fill="none">
-                          <path
-                            d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.364 6.364l-1.414-1.414M7.05 7.05L5.636 5.636m12.728 0l-1.414 1.414M7.05 16.95L5.636 18.364M16 12a4 4 0 11-8 0 4 4 0 018 0z"
-                            stroke="currentColor"
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                        <span className="text-sm font-semibold">Mode sombre</span>
-                      </div>
-                    )}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={handleManualRefresh}
-                    disabled={isRefreshing}
-                  >
-                    <svg className="size-5" fill="none" viewBox="0 0 20 20">
-                      <path
-                        d="M17.5 10A7.5 7.5 0 1 1 2.5 10 7.5 7.5 0 0 1 17.5 10M13.333 8.333L10 11.667m0 0L6.667 8.333M10 11.667V3.333"
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="1.67"
-                      />
-                    </svg>
-                    <span className="text-sm font-semibold">
-                      {isRefreshing ? 'Actualisation...' : 'Rafraîchir'}
-                    </span>
-                  </Button>
-                  <Button variant="outline" onClick={() => setThresholdModalOpen(true)}>
-                    <svg className="size-6 text-foreground" fill="none" viewBox="0 0 24 24">
-                      <path
-                        d={svgPaths.p1d2235f0}
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="1.67"
-                      />
-                    </svg>
-                    <span className="text-sm font-semibold">
-                      Gérer le seuil par défaut
-                    </span>
-                  </Button>
-                  <Button variant="default" onClick={() => setAddRoomModalOpen(true)}>
-                    <svg className="size-5" fill="none" viewBox="0 0 20 20">
-                      <path
-                        d={svgPaths.p17eb400}
-                        stroke="white"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="1.67"
-                      />
-                    </svg>
-                    <span className="text-sm font-semibold">Ajouter</span>
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Filters and Search */}
-          <div className="px-8 py-6 bg-card border-b border-border">
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-2 flex-wrap">
-                  {/* Temperature filters */}
-                  <Button
-                    variant={activeFilters.includes("cold") ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => toggleFilter("cold")}
-                  >
-                    <span className="text-sm font-semibold">Froid (&lt;18°C)</span>
-                  </Button>
-                  <Button
-                    variant={activeFilters.includes("optimal") ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => toggleFilter("optimal")}
-                  >
-                    <span className="text-sm font-semibold">Optimal (18-24°C)</span>
-                  </Button>
-                  <Button
-                    variant={activeFilters.includes("warm") ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => toggleFilter("warm")}
-                  >
-                    <span className="text-sm font-semibold">Chaud (24-28°C)</span>
-                  </Button>
-                  <Button
-                    variant={activeFilters.includes("hot") ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => toggleFilter("hot")}
-                  >
-                    <span className="text-sm font-semibold">Très chaud (&gt;28°C)</span>
-                  </Button>
-
-                  <div className="h-6 w-px bg-border" />
-
-                  {/* Trend filters */}
-                  <Button
-                    variant={activeFilters.includes("up") ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => toggleFilter("up")}
-                  >
-                    <span className="text-sm font-semibold">En hausse</span>
-                  </Button>
-                  <Button
-                    variant={activeFilters.includes("down") ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => toggleFilter("down")}
-                  >
-                    <span className="text-sm font-semibold">En baisse</span>
-                  </Button>
-
-                  <div className="h-6 w-px bg-border" />
-
-                  {/* Category filters */}
-                  <Button
-                    variant={activeFilters.includes("subscriptions") ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => toggleFilter("subscriptions")}
-                  >
-                    <span className="text-sm font-semibold">Abonnements</span>
-                  </Button>
-
-                  {activeFilters.length > 0 && (
-                    <>
-                      <div className="h-6 w-px bg-border" />
+        <div className="flex-1 overflow-auto">
+          {showRoomDetail && selectedRoom ? (
+            <RoomDetailPage
+              room={selectedRoom}
+              isSubscribed={subscribedRooms.includes(selectedRoom.id)}
+              onToggleSubscription={handleToggleSubscription}
+              onBack={() => setShowRoomDetail(false)}
+            />
+          ) : currentPage === "settings" ? (
+            <SettingsPage />
+          ) : currentPage === "notifications" ? (
+            <NotificationsPage />
+          ) : currentPage === "users" ? (
+            <UsersPage />
+          ) : currentPage === "transactionHistory" ? (
+            <TransactionHistoryPage />
+          ) : currentPage === "documentation" ? (
+            <DocumentationPage />
+          ) : (
+            <div className="flex flex-col h-full">
+              {/* Header */}
+              <div className="bg-card border-b border-border">
+                <div className="px-8 py-8">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <h1 className="text-[30px] leading-[38px] font-semibold text-foreground mb-1">
+                        Bon retour, Olivia
+                      </h1>
+                      <p className="text-muted-foreground">
+                        Suivez et gérez le climat des salles de classes
+                        {lastFetch && (
+                          <span className="ml-2 text-xs opacity-70">
+                            • Dernière mise à jour : {lastFetch.toLocaleTimeString('fr-FR')}
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                    <div className="flex gap-3">
                       <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setActiveFilters([])}
+                        variant="outline"
+                        onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                        className="shrink-0"
                       >
-                        <span className="text-sm font-semibold text-muted-foreground">Réinitialiser tout</span>
+                        {theme === "dark" ? (
+                          <div className="flex items-center gap-2">
+                            <svg className="size-5" viewBox="0 0 24 24" fill="none">
+                              <path
+                                d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"
+                                stroke="currentColor"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                            <span className="text-sm font-semibold">Mode clair</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <svg className="size-5" viewBox="0 0 24 24" fill="none">
+                              <path
+                                d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.364 6.364l-1.414-1.414M7.05 7.05L5.636 5.636m12.728 0l-1.414 1.414M7.05 16.95L5.636 18.364M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+                                stroke="currentColor"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                            <span className="text-sm font-semibold">Mode sombre</span>
+                          </div>
+                        )}
                       </Button>
-                    </>
-                  )}
-                </div>
-
-                <div className="w-80">
-                  <div className="relative">
-                    <svg
-                      className="absolute left-3.5 top-1/2 -translate-y-1/2 size-5"
-                      fill="none"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        d={svgPaths.p272bfa00}
-                        stroke="hsl(var(--muted-foreground))"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="1.66667"
-                      />
-                    </svg>
-                    <Input
-                      type="text"
-                      placeholder="Recherche"
-                      className="pl-10"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
+                      <Button
+                        variant="outline"
+                        onClick={handleManualRefresh}
+                        disabled={isRefreshing}
+                      >
+                        <svg className="size-5" fill="none" viewBox="0 0 20 20">
+                          <path
+                            d="M17.5 10A7.5 7.5 0 1 1 2.5 10 7.5 7.5 0 0 1 17.5 10M13.333 8.333L10 11.667m0 0L6.667 8.333M10 11.667V3.333"
+                            stroke="currentColor"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="1.67"
+                          />
+                        </svg>
+                        <span className="text-sm font-semibold">
+                          {isRefreshing ? 'Actualisation...' : 'Rafraîchir'}
+                        </span>
+                      </Button>
+                      <Button variant="outline" onClick={() => setThresholdModalOpen(true)}>
+                        <svg className="size-6 text-foreground" fill="none" viewBox="0 0 24 24">
+                          <path
+                            d={svgPaths.p1d2235f0}
+                            stroke="currentColor"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="1.67"
+                          />
+                        </svg>
+                        <span className="text-sm font-semibold">
+                          Gérer le seuil par défaut
+                        </span>
+                      </Button>
+                      <Button variant="default" onClick={() => setAddRoomModalOpen(true)}>
+                        <svg className="size-5" fill="none" viewBox="0 0 20 20">
+                          <path
+                            d={svgPaths.p17eb400}
+                            stroke="white"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="1.67"
+                          />
+                        </svg>
+                        <span className="text-sm font-semibold">Ajouter</span>
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {activeFilters.length > 0 && (
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">
-                    {filteredRooms.length} {filteredRooms.length > 1 ? "salles trouvées" : "salle trouvée"}
-                  </span>
+              {/* Filters and Search */}
+              <div className="px-8 py-6 bg-card border-b border-border">
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {/* Temperature filters */}
+                      <Button
+                        variant={activeFilters.includes("cold") ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => toggleFilter("cold")}
+                      >
+                        <span className="text-sm font-semibold">Froid (&lt;18°C)</span>
+                      </Button>
+                      <Button
+                        variant={activeFilters.includes("optimal") ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => toggleFilter("optimal")}
+                      >
+                        <span className="text-sm font-semibold">Optimal (18-24°C)</span>
+                      </Button>
+                      <Button
+                        variant={activeFilters.includes("warm") ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => toggleFilter("warm")}
+                      >
+                        <span className="text-sm font-semibold">Chaud (24-28°C)</span>
+                      </Button>
+                      <Button
+                        variant={activeFilters.includes("hot") ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => toggleFilter("hot")}
+                      >
+                        <span className="text-sm font-semibold">Très chaud (&gt;28°C)</span>
+                      </Button>
+
+                      <div className="h-6 w-px bg-border" />
+
+                      {/* Trend filters */}
+                      <Button
+                        variant={activeFilters.includes("up") ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => toggleFilter("up")}
+                      >
+                        <span className="text-sm font-semibold">En hausse</span>
+                      </Button>
+                      <Button
+                        variant={activeFilters.includes("down") ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => toggleFilter("down")}
+                      >
+                        <span className="text-sm font-semibold">En baisse</span>
+                      </Button>
+
+                      <div className="h-6 w-px bg-border" />
+
+                      {/* Category filters */}
+                      <Button
+                        variant={activeFilters.includes("subscriptions") ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => toggleFilter("subscriptions")}
+                      >
+                        <span className="text-sm font-semibold">Abonnements</span>
+                      </Button>
+
+                      {activeFilters.length > 0 && (
+                        <>
+                          <div className="h-6 w-px bg-border" />
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setActiveFilters([])}
+                          >
+                            <span className="text-sm font-semibold text-muted-foreground">Réinitialiser tout</span>
+                          </Button>
+                        </>
+                      )}
+                    </div>
+
+                    <div className="w-80">
+                      <div className="relative">
+                        <svg
+                          className="absolute left-3.5 top-1/2 -translate-y-1/2 size-5"
+                          fill="none"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            d={svgPaths.p272bfa00}
+                            stroke="hsl(var(--muted-foreground))"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="1.66667"
+                          />
+                        </svg>
+                        <Input
+                          type="text"
+                          placeholder="Recherche"
+                          className="pl-10"
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {activeFilters.length > 0 && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">
+                        {filteredRooms.length} {filteredRooms.length > 1 ? "salles trouvées" : "salle trouvée"}
+                      </span>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          </div>
-
-          {/* Room Cards Grid */}
-          <div className="flex-1 p-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredRooms.map((room) => (
-                <RoomCard
-                  key={room.id}
-                  {...room}
-                  isSubscribed={subscribedRooms.includes(room.id)}
-                  onToggleSubscription={handleToggleSubscription}
-                  onClick={() => { setSelectedRoom(room); setShowRoomDetail(true); }}
-                  onEditRoom={handleEditRoom}
-                />
-              ))}
-            </div>
-
-            {filteredRooms.length === 0 && (
-              <div className="flex flex-col items-center justify-center h-64 text-center">
-                <svg
-                  className="size-16 text-gray-300 mb-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    d={svgPaths.p272bfa00}
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="1.5"
-                  />
-                </svg>
-                <p className="text-muted-foreground text-lg mb-2">
-                  Aucune salle trouvée
-                </p>
-                <p className="text-muted-foreground text-sm">
-                  Essayez de modifier vos critères de recherche ou filtres
-                </p>
               </div>
-            )}
-          </div>
+
+              {/* Room Cards Grid */}
+              <div className="flex-1 p-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredRooms.map((room) => (
+                    <RoomCard
+                      key={room.id}
+                      {...room}
+                      isSubscribed={subscribedRooms.includes(room.id)}
+                      onToggleSubscription={handleToggleSubscription}
+                      onClick={() => { setSelectedRoom(room); setShowRoomDetail(true); }}
+                      onEditRoom={handleEditRoom}
+                      onDeleteRoom={handleDeleteRoom}
+                      onEditThreshold={handleEditThreshold}
+                      userRole={userRole}
+                    />
+                  ))}
+                </div>
+
+                {filteredRooms.length === 0 && (
+                  <div className="flex flex-col items-center justify-center h-64 text-center">
+                    <svg
+                      className="size-16 text-gray-300 mb-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d={svgPaths.p272bfa00}
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="1.5"
+                      />
+                    </svg>
+                    <p className="text-muted-foreground text-lg mb-2">
+                      Aucune salle trouvée
+                    </p>
+                    <p className="text-muted-foreground text-sm">
+                      Essayez de modifier vos critères de recherche ou filtres
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
-      </div>
-      )}
 
-      {/* Modals */}
-      <AddRoomModal
-        open={addRoomModalOpen}
-        onOpenChange={setAddRoomModalOpen}
-        onAddRoom={handleAddRoom}
-      />
-
-      <ThresholdModal
-        open={thresholdModalOpen}
-        onOpenChange={setThresholdModalOpen}
-        onSave={handleSaveThresholds}
-      />
-
-      {roomToEdit && (
-        <EditRoomModal
-          open={editRoomModalOpen}
-          onOpenChange={setEditRoomModalOpen}
-          room={{
-            id: roomToEdit.id,
-            name: roomToEdit.room,
-            description: roomToEdit.description,
-          }}
-          onUpdateRoom={handleUpdateRoom}
+        {/* Modals */}
+        <AddRoomModal
+          open={addRoomModalOpen}
+          onOpenChange={setAddRoomModalOpen}
+          onAddRoom={handleAddRoom}
         />
-      )}
-    </div>
+
+        <ThresholdModal
+          open={thresholdModalOpen}
+          onOpenChange={setThresholdModalOpen}
+          onSave={handleSaveThresholds}
+        />
+
+        {roomToEdit && (
+          <EditRoomModal
+            open={editRoomModalOpen}
+            onOpenChange={setEditRoomModalOpen}
+            room={{
+              id: roomToEdit.id,
+              name: roomToEdit.room,
+              description: roomToEdit.description,
+            }}
+            onUpdateRoom={handleUpdateRoom}
+          />
+        )}
+      </div>
+    </SidebarProvider>
   )
 }
