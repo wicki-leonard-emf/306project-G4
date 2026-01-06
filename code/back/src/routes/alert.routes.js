@@ -1,7 +1,7 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const { getMyAlerts, getAllAlerts, deleteAlert, deleteAllAlerts } = require('../controllers/alert.controller');
-const { requireAuth, requireRole } = require('../middleware/auth.middleware');
+import { getMyAlerts, getAllAlerts, deleteAlert, deleteAllAlerts } from '../controllers/alert.controller.js';
+import { requireAuth, requireRole } from '../middleware/auth.middleware.js';
 
 // Toutes les routes nécessitent l'authentification
 router.use(requireAuth);
@@ -26,4 +26,4 @@ router.delete('/', deleteAllAlerts);
 // @access  Private/Admin
 router.delete('/:id', requireRole(['ADMIN']), deleteAlert);
 
-module.exports = router;
+export default router;
