@@ -573,14 +573,14 @@ export const getRoomHistory = async (req, res) => {
 
     // Récupérer les readings depuis startDate
     const [tempReadings, humidityReadings] = await Promise.all([
-      tempSensor ? prisma.reading.findMany({
+      tempSensor ? prisma.sensorReading.findMany({
         where: {
           sensorId: tempSensor.id,
           timestamp: { gte: startDate }
         },
         orderBy: { timestamp: 'asc' }
       }) : [],
-      humiditySensor ? prisma.reading.findMany({
+      humiditySensor ? prisma.sensorReading.findMany({
         where: {
           sensorId: humiditySensor.id,
           timestamp: { gte: startDate }
