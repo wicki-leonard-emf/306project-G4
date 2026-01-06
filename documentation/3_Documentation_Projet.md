@@ -362,10 +362,15 @@ _(à compléter par Cyril)_
 
 | Terme   | Définition                                                            |
 | ------- | --------------------------------------------------------------------- |
-| RPi     | Raspberry Pi, unité edge qui lit les capteurs et envoie les données   |
-| Phidget | Capteurs Phidget utilisés pour température et humidité                |
 | API     | Interface REST fournie par le backend (`/api` endpoints)              |
+| CSV     | Comma-Separated Values — format de fichier tabulaire                 |
+| IoT     | Internet of Things — système d'appareils connectés et communicants   |
 | KPI     | Indicateur clé de performance (ex : ergonomie, fiabilité des alertes) |
-| MVP     | Minimum Viable Product — version initiale validant la chaine complète |
-
-| | |
+| MVP     | Minimum Viable Product — version initiale validant la chaîne complète |
+| ORM     | Object-Relational Mapping — mappage objet-relationnel pour base de données |
+| Phidget | Capteurs Phidget utilisés pour température et humidité                |
+| REST    | Representational State Transfer — style architectural pour API web    |
+| RPi     | Raspberry Pi, unité edge qui lit les capteurs et envoie les données   |
+| SQL     | Structured Query Language — langage de requête pour bases de données  |
+| UI      | User Interface — interface utilisateur, ensemble d'écrans et menus     |
+| UML     | Unified Modeling Language — langage de modélisation graphique         |
