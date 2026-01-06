@@ -36,6 +36,9 @@ export function UsersPage() {
   const [newRole, setNewRole] = useState<string>("")
   const [isUpdating, setIsUpdating] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isCreatingUser, setIsCreatingUser] = useState(false)
+  const [newUserEmail, setNewUserEmail] = useState<string>("")
+  const [newUserRole, setNewUserRole] = useState<string>("ELEVE")
 
   useEffect(() => {
     fetchUsers()
@@ -121,6 +124,37 @@ export function UsersPage() {
     }
   }
 
+  const handleCreateUser = async () => {
+    if (!newUserEmail || !newUserRole) return
+
+    setIsUpdating(true)
+    try {
+      const response = await fetch('/api/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: newUserEmail, role: newUserRole }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Erreur lors de la création')
+      }
+
+      const newUser = await response.json()
+      setUsers([...users, newUser])
+      setIsCreatingUser(false)
+      setNewUserEmail("")
+      setNewUserRole("ELEVE")
+      setError(null)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Une erreur est survenue')
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
   const filteredUsers = users.filter(user =>
     user.email.toLowerCase().includes(searchQuery.toLowerCase())
   )
@@ -151,7 +185,7 @@ export function UsersPage() {
                   Gérez les utilisateurs et leurs accès à l'application
                 </p>
               </div>
-              <Button variant="default">
+              <Button variant="default" onClick={() => { setIsCreatingUser(true); setNewUserEmail(""); setNewUserRole("ELEVE"); }}>
                 <svg className="size-5" fill="none" viewBox="0 0 20 20">
                   <path
                     d="M10 4.16667V15.8333M4.16667 10H15.8333"
@@ -352,6 +386,46 @@ export function UsersPage() {
           </div>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Create User Modal */}
+      <Dialog open={isCreatingUser} onOpenChange={(open) => !open && setIsCreatingUser(false)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Ajouter un nouvel utilisateur</DialogTitle>
+            <DialogDescription>
+              Créez un nouveau compte utilisateur
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Email</label>
+              <Input
+                type="email"
+                placeholder="utilisateur@example.com"
+                value={newUserEmail}
+                onChange={(e) => setNewUserEmail(e.target.value)}
+                disabled={isUpdating}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Rôle</label>
+              <Select value={newUserRole} onChange={(e) => setNewUserRole(e.target.value)}>
+                <option value="ADMIN">Administrateur</option>
+                <option value="ENSEIGNANT">Enseignant</option>
+                <option value="ELEVE">Élève</option>
+              </Select>
+            </div>
+            <div className="flex justify-end gap-2 pt-4">
+              <Button variant="outline" onClick={() => setIsCreatingUser(false)} disabled={isUpdating}>
+                Annuler
+              </Button>
+              <Button onClick={handleCreateUser} disabled={isUpdating || !newUserEmail}>
+                {isUpdating ? "Création..." : "Créer"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
