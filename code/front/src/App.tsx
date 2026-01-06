@@ -410,12 +410,12 @@ export default function App({ onLogout }: AppProps) {
     <div className="flex h-screen bg-background text-foreground">
       <Sidebar currentPage={currentPage} onPageChange={setCurrentPage} onLogout={onLogout} />
 
-      {showRoomDetail && selectedRoom ? (userRole = { userRole }
-        < RoomDetailPage
+      {showRoomDetail && selectedRoom ? (
+        <RoomDetailPage
           room={selectedRoom}
-      isSubscribed={subscribedRooms.includes(selectedRoom.id)}
-      onToggleSubscription={handleToggleSubscription}
-      onBack={() => setShowRoomDetail(false)}
+          isSubscribed={subscribedRooms.includes(selectedRoom.id)}
+          onToggleSubscription={handleToggleSubscription}
+          onBack={() => setShowRoomDetail(false)}
         />
       ) : currentPage === "settings" ? (
       <SettingsPage />
