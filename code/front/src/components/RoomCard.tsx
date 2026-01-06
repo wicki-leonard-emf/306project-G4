@@ -41,7 +41,7 @@ export function RoomCard({
   userRole
 }: RoomCardProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  
+
   const isHot = trend === "up"
   // Utiliser des couleurs réelles pour Recharts (pas de variables CSS)
   const color = isHot ? "#ef4444" : "#a855f7" // red-500 et purple-500
