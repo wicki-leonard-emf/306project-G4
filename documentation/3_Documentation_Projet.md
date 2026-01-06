@@ -53,13 +53,39 @@ Nom du candidat : Leonard Wiki, Gabriel Beer, Cyril Dubusc
 
 ## Analyse de la situation initiale
 
-…
+### État actuel
+Actuellement, les salles de classe de l'école EMF ne disposent pas d'un système centralisé de monitoring des conditions environnementales (température et humidité). Les variations de température et d'humidité affectent le confort des étudiants et l'efficacité pédagogique, mais il n'existe pas d'outil pour surveiller ou analyser ces paramètres en temps réel.
 
-Par exemple pourquoi le projet est lancé ? problème -> opportunité ? Reprendre des éléments du business case.
+### Problème identifié
+Sans système de monitoring, l'école ne peut pas :
+- Détecter rapidement les variations anormales de température/humidité
+- Analyser l'impact des conditions environnementales sur le confort des salles
+- Optimiser le fonctionnement des systèmes de climatisation/ventilation
+- Archiver et analyser les données historiques
+
+### Opportunité du projet
+Développer un système automatisé de monitoring des capteurs (sensorHub) permettra de :
+- Surveiller en temps réel les conditions dans chaque salle de classe
+- Générer des alertes en cas de dépassement de seuils
+- Fournir une interface de gestion aux enseignants et administrateurs
+- Collecter des données pour optimiser l'environnement scolaire
 
 ## Analyse de l'état désiré
 
-…
+### Système cible (sensorHub)
+Le système sensorHub doit permettre :
+- **Collecte de données** : Des capteurs Phidget (température et humidité) connectés à une Raspberry Pi envoient automatiquement les données à intervalles réguliers
+- **Stockage centralisé** : Toutes les lectures sont stockées dans une base de données PostgreSQL avec timestamps et métadonnées
+- **Consultation en temps réel** : Un tableau de bord web affiche les conditions actuelles de chaque salle avec visualisation des trends
+- **Gestion des seuils** : Les administrateurs peuvent définir des seuils d'alerte pour chaque salle
+- **Interface utilisateur** : Application React responsive pour desktop et mobile avec authentification par rôles (Admin, Enseignant, Élève)
+- **API REST** : Backend Express.js exposant les endpoints pour consultation et gestion des données
+
+### Architecture souhaitée
+L'application est architecturée en trois composants :
+1. **Frontend (React)** : Tableau de bord interactif, gestion des utilisateurs et des seuils
+2. **Backend (Express.js + Prisma)** : API REST, gestion de base de données, authentification
+3. **Raspberry Pi** : Script Node.js pour la lecture des capteurs Phidget et l'envoi des données
 
 ## Cahier des charges / exigences du système
 
