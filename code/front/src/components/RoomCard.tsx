@@ -1,4 +1,6 @@
+import { useState } from "react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "./ui/alert-dialog"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./ui/chart"
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
 import { Edit, Eye, Settings, Clock, Download, Trash2, MoreVertical, FileEdit } from "lucide-react"
@@ -38,6 +40,8 @@ export function RoomCard({
   onEditThreshold,
   userRole
 }: RoomCardProps) {
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  
   const isHot = trend === "up"
   // Utiliser des couleurs réelles pour Recharts (pas de variables CSS)
   const color = isHot ? "#ef4444" : "#a855f7" // red-500 et purple-500
@@ -136,9 +140,7 @@ export function RoomCard({
                   <DropdownMenuItem
                     onClick={(e) => {
                       e.stopPropagation()
-                      if (onDeleteRoom && confirm(`Êtes-vous sûr de vouloir supprimer la salle "${room}" ?`)) {
-                        onDeleteRoom(id)
-                      }
+                      setDeleteDialogOpen(true)
                     }}
                     className="text-destructive focus:text-destructive"
                   >
@@ -211,6 +213,33 @@ export function RoomCard({
           </div>
         </div>
       </div>
+
+      {/* Alert Dialog pour confirmer la suppression */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer cette salle ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. La salle "{room}" et toutes ses données (capteurs, lectures, abonnements) seront définitivement supprimées.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={(e) => e.stopPropagation()}>
+              Annuler
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.stopPropagation()
+                if (onDeleteRoom) onDeleteRoom(id)
+                setDeleteDialogOpen(false)
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
