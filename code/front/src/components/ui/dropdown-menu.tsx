@@ -7,14 +7,16 @@ interface DropdownMenuProps {
 
 const DropdownMenu = ({ children }: DropdownMenuProps) => {
   const [isOpen, setIsOpen] = React.useState(false)
-  
+  const menuRef = React.useRef<HTMLDivElement>(null)
+
   return (
-    <div className="relative">
+    <div className="relative" ref={menuRef}>
       {React.Children.map(children, child => {
         if (React.isValidElement(child)) {
           return React.cloneElement(child as React.ReactElement<any>, {
             isOpen,
             setIsOpen,
+            menuRef,
           })
         }
         return child
@@ -51,24 +53,28 @@ interface DropdownMenuContentProps {
   setIsOpen?: (open: boolean) => void
 }
 
-const DropdownMenuContent = React.forwardRef<HTMLDivElement, DropdownMenuContentProps>(
-  ({ children, className, isOpen, setIsOpen }, ref) => {
+interface DropdownMenuContentPropsWithRef extends DropdownMenuContentProps {
+  menuRef?: React.RefObject<HTMLDivElement>
+}
+
+const DropdownMenuContent = React.forwardRef<HTMLDivElement, DropdownMenuContentPropsWithRef>(
+  ({ children, className, isOpen, setIsOpen, menuRef }, ref) => {
     React.useEffect(() => {
       if (!isOpen) return
-      
+
       const handleClickOutside = (event: MouseEvent) => {
         const target = event.target as HTMLElement
-        if (!target.closest('[role="menu"]')) {
+        if (menuRef?.current && !menuRef.current.contains(target)) {
           setIsOpen?.(false)
         }
       }
-      
+
       document.addEventListener('mousedown', handleClickOutside)
       return () => document.removeEventListener('mousedown', handleClickOutside)
-    }, [isOpen, setIsOpen])
-    
+    }, [isOpen, setIsOpen, menuRef])
+
     if (!isOpen) return null
-    
+
     return (
       <div
         ref={ref}
