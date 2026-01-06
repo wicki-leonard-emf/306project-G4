@@ -1,5 +1,4 @@
-import { useState } from "react"
-import { Home, BarChart3, Bell, History, Users, BookOpen, Settings, LogOut, Search, ChevronDown } from "lucide-react"
+import { Home, BarChart3, Bell, History, Users, BookOpen, Settings, LogOut, ChevronDown } from "lucide-react"
 import {
   Sidebar as ShadcnSidebar,
   SidebarContent,
@@ -14,22 +13,21 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "./ui/sidebar"
-import { Input } from "./ui/input"
 import { Separator } from "./ui/separator"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible"
 import imgLogo from "figma:asset/d0fc03f5c47a5583e2cfa35ac5f6aa36545efb07.png"
 import imgAvatar from "figma:asset/67da9fddd372b1b5b44ffef41eed6ceb810ddf8a.png"
+import { Button } from "./ui/button"
 
 interface SidebarProps {
   currentPage: string
   onPageChange: (page: string) => void
   onLogout?: () => void
   userRole?: string
+  userEmail?: string
 }
 
-export function Sidebar({ currentPage, onPageChange, onLogout, userRole }: SidebarProps) {
-  const [searchTerm, setSearchTerm] = useState("")
-
+export function Sidebar({ currentPage, onPageChange, onLogout, userRole, userEmail }: SidebarProps) {
   return (
     <ShadcnSidebar className="border-r" collapsible="none">
       <SidebarHeader>
@@ -148,16 +146,15 @@ export function Sidebar({ currentPage, onPageChange, onLogout, userRole }: Sideb
               className="h-8 w-8 rounded-full object-cover"
               src={imgAvatar}
             />
-            <span className="text-sm font-medium">Olivia Rhye</span>
+            <span className="text-sm font-medium">{userEmail ? userEmail.split('@')[0] : 'Utilisateur'}</span>
           </div>
-          <button
+          <Button
             onClick={onLogout}
             disabled={!onLogout}
-            className="rounded-lg p-2 transition-colors hover:bg-destructive hover:text-destructive-foreground disabled:cursor-not-allowed disabled:opacity-50"
-            title="Déconnexion"
+            variant="ghost"
           >
-            <LogOut className="h-4 w-4" />
-          </button>
+            <LogOut size={19} />
+          </Button>
         </div>
       </SidebarFooter>
     </ShadcnSidebar>
