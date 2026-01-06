@@ -92,6 +92,7 @@ export default function App({ onLogout }: AppProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [lastFetch, setLastFetch] = useState<Date | null>(null)
+  const [userRole, setUserRole] = useState<string>("ELEVE")
 
   // Modal states
   const [addRoomModalOpen, setAddRoomModalOpen] = useState(false)
@@ -339,25 +340,23 @@ export default function App({ onLogout }: AppProps) {
     }
   }
 
-  // Effet pour la récupération automatique (toutes les 60 secondes)
-  useEffect(() => {
-    let isMounted = true
-    let intervalId: number
-
-    const fetchRoomsIfMounted = async () => {
-      if (isMounted) {
-        await fetchRooms()
+  // Fonction pour récupérer les infos de l'utilisateur connecté
+  const fetchUserInfo = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
+        credentials: 'include',
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setUserRole(data.user.role)
       }
+    } catch (error) {
+      console.error('Erreur lors de la récupération des infos utilisateur:', error)
     }
-
-    const fetchDataIfMounted = async () => {
-      if (isMounted) {
-        await fetchRooms()
-        await fetchSubscriptions()
-      }
-    }
-
-    fetchDataIfMounted()
+  }
+    fe  await fetchUserInfo()
+      tchDataIfMounted()
     // Intervalle de 60 secondes (60000 ms) au lieu de 2 secondes
     intervalId = window.setInterval(fetchRoomsIfMounted, 60000)
 
@@ -392,7 +391,7 @@ export default function App({ onLogout }: AppProps) {
     <div className="flex h-screen bg-background text-foreground">
       <Sidebar currentPage={currentPage} onPageChange={setCurrentPage} onLogout={onLogout} />
 
-      {showRoomDetail && selectedRoom ? (
+      {showRoomDetail && selectedRoom ? (userRole={userRole} 
         <RoomDetailPage
           room={selectedRoom}
           isSubscribed={subscribedRooms.includes(selectedRoom.id)}

@@ -11,9 +11,10 @@ interface SidebarProps {
   currentPage: string
   onPageChange: (page: string) => void
   onLogout?: () => void
+  userRole?: string
 }
 
-export function Sidebar({ currentPage, onPageChange, onLogout }: SidebarProps) {
+export function Sidebar({ currentPage, onPageChange, onLogout, userRole }: SidebarProps) {
   const [dashboardOpen, setDashboardOpen] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
 
@@ -143,38 +144,42 @@ export function Sidebar({ currentPage, onPageChange, onLogout }: SidebarProps) {
                       </span>
                       <Badge variant="default">10</Badge>
                     </button>
-                    <button
-                      className={`flex items-center px-3 py-2 pl-12 rounded-md hover:bg-muted transition-colors ${currentPage === "transactionHistory" ? "bg-muted" : ""
-                        }`}
-                      onClick={() => onPageChange("transactionHistory")}
-                    >
-                      <span className="font-semibold text-muted-foreground">
-                        Historique des transactions
-                      </span>
-                    </button>
+                    {userRole === "ADMIN" && (
+                      <button
+                        className={`flex items-center px-3 py-2 pl-12 rounded-md hover:bg-muted transition-colors ${currentPage === "transactionHistory" ? "bg-muted" : ""
+                          }`}
+                        onClick={() => onPageChange("transactionHistory")}
+                      >
+                        <span className="font-semibold text-muted-foreground">
+                          Historique des transactions
+                        </span>
+                      </button>
+                    )}
                   </div>
                 </CollapsibleContent>
-              </div>
-
-              {/* Utilisateurs */}
-              <button
-                className={`flex items-center px-3 py-2 rounded-md hover:bg-muted transition-colors ${currentPage === "users" ? "bg-muted" : ""
-                  }`}
-                onClick={() => onPageChange("users")}
-              >
-                <div className="flex gap-3 items-center">
-                  <svg className="size-6 text-muted-foreground" fill="none" viewBox="0 0 24 24">
-                    <path
-                      d={svgPaths.pae41680}
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                    />
-                  </svg>
-                  <span className="font-semibold text-muted-foreground">
-                    Utilisateurs
-                  </span>
+              </div>- Admin uniquement */}
+              {userRole === "ADMIN" && (
+                <button
+                  className={`flex items-center px-3 py-2 rounded-md hover:bg-muted transition-colors ${currentPage === "users" ? "bg-muted" : ""
+                    }`}
+                  onClick={() => onPageChange("users")}
+                >
+                  <div className="flex gap-3 items-center">
+                    <svg className="size-6 text-muted-foreground" fill="none" viewBox="0 0 24 24">
+                      <path
+                        d={svgPaths.pae41680}
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                      />
+                    </svg>
+                    <span className="font-semibold text-muted-foreground">
+                      Utilisateurs
+                    </span>
+                  </div>
+                </button>
+              )}n>
                 </div>
               </button>
             </div>
