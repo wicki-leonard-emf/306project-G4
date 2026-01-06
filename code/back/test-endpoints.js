@@ -112,51 +112,37 @@ const createdResources = {
 
 // Cleanup function to delete test data
 async function cleanupTestData() {
-  logSection('CLEANUP: Removing test data');
+  logSection('CLEANUP: Test data summary');
 
-  let cleanedCount = 0;
+  console.log(`${colors.cyan}Test data created during run:${colors.reset}\n`);
 
-  // Delete created rooms (which will cascade delete sensors and readings)
-  for (const roomId of createdResources.roomIds) {
-    try {
-      const response = await makeRequest('DELETE', `/api/rooms/${roomId}`);
-      if (response.status === 200 || response.status === 204) {
-        logInfo(`Deleted room: ${roomId}`);
-        cleanedCount++;
-      }
-    } catch (error) {
-      console.log(`${colors.yellow}Could not delete room ${roomId}${colors.reset}`);
-    }
+  if (createdResources.roomIds.length > 0) {
+    console.log(`${colors.yellow}📍 Rooms (${createdResources.roomIds.length}):${colors.reset}`);
+    createdResources.roomIds.forEach(id => {
+      console.log(`   - ${id}`);
+    });
   }
 
-  // Delete created sensors
-  for (const sensorId of createdResources.sensorIds) {
-    try {
-      const response = await makeRequest('DELETE', `/api/sensors/${sensorId}`);
-      if (response.status === 200 || response.status === 204) {
-        logInfo(`Deleted sensor: ${sensorId}`);
-        cleanedCount++;
-      }
-    } catch (error) {
-      console.log(`${colors.yellow}Could not delete sensor ${sensorId}${colors.reset}`);
-    }
+  if (createdResources.sensorIds.length > 0) {
+    console.log(`${colors.yellow}📊 Sensors (${createdResources.sensorIds.length}):${colors.reset}`);
+    createdResources.sensorIds.forEach(id => {
+      console.log(`   - ${id}`);
+    });
   }
 
-  // Delete created users
-  const headers = sessionCookie ? { Cookie: sessionCookie } : {};
-  for (const userId of createdResources.userIds) {
-    try {
-      const response = await makeRequest('DELETE', `/api/users/${userId}`, null, headers);
-      if (response.status === 200 || response.status === 204) {
-        logInfo(`Deleted user: ${userId}`);
-        cleanedCount++;
-      }
-    } catch (error) {
-      console.log(`${colors.yellow}Could not delete user ${userId}${colors.reset}`);
-    }
+  if (createdResources.userIds.length > 0) {
+    console.log(`${colors.yellow}👤 Users (${createdResources.userIds.length}):${colors.reset}`);
+    createdResources.userIds.forEach(id => {
+      console.log(`   - ${id}`);
+    });
   }
 
-  console.log(`\n${colors.cyan}Cleanup completed: ${cleanedCount} resources deleted${colors.reset}\n`);
+  if (createdResources.roomIds.length === 0 && createdResources.sensorIds.length === 0 && createdResources.userIds.length === 0) {
+    console.log(`${colors.green}✓ No test data to clean (all test rooms/sensors are read from existing data)${colors.reset}\n`);
+  } else {
+    console.log(`\n${colors.cyan}Note: Test data is persisted in the database.${colors.reset}`);
+    console.log(`${colors.cyan}These are public test resources that can be safely deleted later.${colors.reset}\n`);
+  }
 }
 
 // Test Suite

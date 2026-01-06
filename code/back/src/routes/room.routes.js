@@ -18,8 +18,8 @@ router.get('/:id', getRoomById);
 router.get('/:roomId/history', getRoomHistory);
 
 // PUT /api/rooms/:id - Mise à jour d'une salle (nom et/ou description)
-// Middleware: requireAuth + requireRole (ADMIN ou ENSEIGNANT uniquement)
-router.put('/:id', requireAuth, requireRole(['ADMIN', 'ENSEIGNANT']), updateRoom);
+// Middleware: requireAuth + requireRole (ADMIN uniquement)
+router.put('/:id', requireAuth, requireRole(['ADMIN']), updateRoom);
 
 // PATCH /api/rooms/:id/thresholds - Mise à jour des seuils d'alerte
 // Middleware: requireAuth + requireRole (ADMIN uniquement)

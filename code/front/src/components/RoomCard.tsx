@@ -1,6 +1,7 @@
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./ui/chart"
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
+import { Edit, Eye, Settings, Clock, Download, Trash2, MoreVertical, FileEdit } from "lucide-react"
 
 interface RoomCardProps {
   id: string
@@ -15,9 +16,28 @@ interface RoomCardProps {
   onToggleSubscription?: (roomId: string) => void
   onClick?: () => void
   onEditRoom?: (roomId: string) => void
+  onDeleteRoom?: (roomId: string) => void
+  onEditThreshold?: (roomId: string) => void
+  userRole?: string
 }
 
-export function RoomCard({ id, room, temperature, humidity, trend, percentage, period, chartData, isSubscribed, onToggleSubscription, onClick, onEditRoom }: RoomCardProps) {
+export function RoomCard({
+  id,
+  room,
+  temperature,
+  humidity,
+  trend,
+  percentage,
+  period,
+  chartData,
+  isSubscribed,
+  onToggleSubscription,
+  onClick,
+  onEditRoom,
+  onDeleteRoom,
+  onEditThreshold,
+  userRole
+}: RoomCardProps) {
   const isHot = trend === "up"
   // Utiliser des couleurs réelles pour Recharts (pas de variables CSS)
   const color = isHot ? "#ef4444" : "#a855f7" // red-500 et purple-500
@@ -34,6 +54,9 @@ export function RoomCard({ id, room, temperature, humidity, trend, percentage, p
       color: color,
     },
   }
+
+  // Debug
+  console.log('RoomCard userRole:', userRole)
 
   return (
     <div
@@ -59,32 +82,71 @@ export function RoomCard({ id, room, temperature, humidity, trend, percentage, p
             )}
           </div>
           <DropdownMenu>
-            <DropdownMenuTrigger className="p-1 hover:bg-muted rounded transition-colors">
-              <svg className="size-5 fill-muted-foreground" viewBox="0 0 20 20">
-                <path
-                  d="M10 10.8333C10.4602 10.8333 10.8333 10.4602 10.8333 10C10.8333 9.53976 10.4602 9.16667 10 9.16667C9.53976 9.16667 9.16667 9.53976 9.16667 10C9.16667 10.4602 9.53976 10.8333 10 10.8333Z"
-                />
-                <path
-                  d="M10 5C10.4602 5 10.8333 4.6269 10.8333 4.16667C10.8333 3.70643 10.4602 3.33333 10 3.33333C9.53976 3.33333 9.16667 3.70643 9.16667 4.16667C9.16667 4.6269 9.53976 5 10 5Z"
-                />
-                <path
-                  d="M10 16.6667C10.4602 16.6667 10.8333 16.2936 10.8333 15.8333C10.8333 15.3731 10.4602 15 10 15C9.53976 15 9.16667 15.3731 9.16667 15.8333C9.16667 16.2936 9.53976 16.6667 10 16.6667Z"
-                />
-              </svg>
+            <DropdownMenuTrigger className="p-1 hover:bg-muted rounded transition-colors" onClick={(e) => e.stopPropagation()}>
+              <MoreVertical className="size-5 text-muted-foreground" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
+            <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
               <DropdownMenuItem
                 onClick={(e) => {
                   e.stopPropagation()
-                  if (onEditRoom) onEditRoom(id)
+                  if (onClick) onClick()
                 }}
               >
-                Modifier le nom
+                <Eye className="h-4 w-4" />
+                <span>Voir les détails</span>
               </DropdownMenuItem>
-              <DropdownMenuItem>Voir les détails</DropdownMenuItem>
-              <DropdownMenuItem>Modifier le seuil</DropdownMenuItem>
-              <DropdownMenuItem>Historique</DropdownMenuItem>
-              <DropdownMenuItem>Exporter les données</DropdownMenuItem>
+
+              {userRole === "ADMIN" && (
+                <>
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      if (onEditRoom) onEditRoom(id)
+                    }}
+                  >
+                    <FileEdit className="h-4 w-4" />
+                    <span>Renommer</span>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      if (onEditThreshold) onEditThreshold(id)
+                    }}
+                  >
+                    <Settings className="h-4 w-4" />
+                    <span>Modifier les seuils</span>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuSeparator />
+
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      // TODO: Implement export functionality
+                      console.log("Export data for room:", id)
+                    }}
+                  >
+                    <Download className="h-4 w-4" />
+                    <span>Exporter les données</span>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuSeparator />
+
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      if (onDeleteRoom && confirm(`Êtes-vous sûr de vouloir supprimer la salle "${room}" ?`)) {
+                        onDeleteRoom(id)
+                      }
+                    }}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    <span>Supprimer la salle</span>
+                  </DropdownMenuItem>
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
