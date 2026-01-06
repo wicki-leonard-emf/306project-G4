@@ -355,16 +355,35 @@ export default function App({ onLogout }: AppProps) {
       console.error('Erreur lors de la récupération des infos utilisateur:', error)
     }
   }
-    fe  await fetchUserInfo()
-  tchDataIfMounted()
-  // Intervalle de 60 secondes (60000 ms) au lieu de 2 secondes
-  intervalId = window.setInterval(fetchRoomsIfMounted, 60000)
 
-  return () => {
-    isMounted = false
-    window.clearInterval(intervalId)
-  }
-}, [])
+  // Effet pour la récupération automatique (toutes les 60 secondes)
+  useEffect(() => {
+    let isMounted = true
+    let intervalId: number
+
+    const fetchRoomsIfMounted = async () => {
+      if (isMounted) {
+        await fetchRooms()
+      }
+    }
+
+    const fetchDataIfMounted = async () => {
+      if (isMounted) {
+        await fetchRooms()
+        await fetchSubscriptions()
+        await fetchUserInfo()
+      }
+    }
+
+    fetchDataIfMounted()
+    // Intervalle de 60 secondes (60000 ms) au lieu de 2 secondes
+    intervalId = window.setInterval(fetchRoomsIfMounted, 60000)
+
+    return () => {
+      isMounted = false
+      window.clearInterval(intervalId)
+    }
+  }, [])
 
 const filteredRooms = rooms.filter((room: Room) => {
   const matchesSearch = room.room.toLowerCase().includes(searchTerm.toLowerCase())
