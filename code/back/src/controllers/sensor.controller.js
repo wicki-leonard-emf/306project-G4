@@ -1,5 +1,6 @@
 import { prisma } from '../models/index.js';
 import { generateId } from '../lib/generateId.js';
+import { sendThresholdAlert } from '../lib/emailService.js';
 
 /**
  * POST /api/sensors
@@ -133,9 +134,25 @@ export const ingestReading = async (req, res) => {
   try {
     const { serialNumber, value } = req.body;
 
-    // Trouver le capteur par serialNumber
+    // Trouver le capteur par serialNumber avec les infos de la salle
     const sensor = await prisma.sensor.findUnique({
-      where: { serialNumber }
+      where: { serialNumber },
+      include: {
+        room: {
+          include: {
+            subscriptions: {
+              include: {
+                user: {
+                  select: {
+                    email: true,
+                    id: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     });
 
     if (!sensor) {
@@ -171,6 +188,9 @@ export const ingestReading = async (req, res) => {
       }
     });
 
+    // Vérifier les seuils et envoyer des alertes si nécessaire
+    await checkThresholdsAndAlert(sensor, value);
+
     res.status(201).json({
       success: true,
       reading: {
@@ -183,3 +203,110 @@ export const ingestReading = async (req, res) => {
     res.status(500).json({ error: 'Erreur lors de l\'ingestion de la lecture' });
   }
 };
+
+/**
+ * Vérifie si les seuils sont dépassés et envoie une alerte si nécessaire
+ * @param {Object} sensor - Capteur avec relation room et subscriptions
+ * @param {number} value - Valeur mesurée
+ */
+async function checkThresholdsAndAlert(sensor, value) {
+  try {
+    const room = sensor.room;
+    const sensorType = sensor.type;
+    
+    // Déterminer les seuils selon le type de capteur
+    let minThreshold = null;
+    let maxThreshold = null;
+    
+    if (sensorType === 'TEMPERATURE') {
+      minThreshold = room.minTemp;
+      maxThreshold = room.maxTemp;
+    } else if (sensorType === 'HUMIDITY') {
+      minThreshold = room.minHumidity;
+      maxThreshold = room.maxHumidity;
+    }
+
+    // Vérifier si un seuil est dépassé
+    let thresholdType = null;
+    let thresholdValue = null;
+
+    if (minThreshold !== null && value < minThreshold) {
+      thresholdType = 'min';
+      thresholdValue = minThreshold;
+    } else if (maxThreshold !== null && value > maxThreshold) {
+      thresholdType = 'max';
+      thresholdValue = maxThreshold;
+    }
+
+    // Si aucun seuil n'est dépassé, ne rien faire
+    if (!thresholdType) {
+      return;
+    }
+
+    // Vérifier qu'on n'a pas déjà envoyé une alerte récemment (selon alertDelay)
+    const alertDelayMinutes = room.alertDelay || 15;
+    const alertDelayMs = alertDelayMinutes * 60 * 1000;
+    const lastAlertTime = new Date(Date.now() - alertDelayMs);
+
+    const recentAlert = await prisma.alert.findFirst({
+      where: {
+        roomId: room.id,
+        sensorType,
+        thresholdType,
+        sentAt: {
+          gte: lastAlertTime
+        }
+      },
+      orderBy: {
+        sentAt: 'desc'
+      }
+    });
+
+    // Si une alerte a déjà été envoyée récemment, ne pas spammer
+    if (recentAlert) {
+      console.log(`⏱️  Alerte récente trouvée pour ${room.name} (${sensorType}/${thresholdType}), pas de nouvel envoi`);
+      return;
+    }
+
+    // Récupérer les emails des abonnés
+    const recipients = room.subscriptions
+      .map(sub => sub.user.email)
+      .filter(email => email); // Filtrer les emails vides
+
+    if (recipients.length === 0) {
+      console.log(`⚠️  Aucun abonné pour ${room.name}, pas d'email envoyé`);
+      return;
+    }
+
+    // Envoyer l'email d'alerte
+    const emailResult = await sendThresholdAlert({
+      recipients,
+      roomName: room.name,
+      sensorType,
+      currentValue: value,
+      threshold: thresholdValue,
+      thresholdType
+    });
+
+    // Enregistrer l'alerte dans la DB
+    if (emailResult.success) {
+      await prisma.alert.create({
+        data: {
+          id: generateId(),
+          roomId: room.id,
+          sensorType,
+          thresholdType,
+          value,
+          threshold: thresholdValue,
+          recipientCount: recipients.length
+        }
+      });
+      
+      console.log(`✅ Alerte envoyée et enregistrée pour ${room.name}`);
+    }
+
+  } catch (error) {
+    console.error('❌ Erreur checkThresholdsAndAlert:', error);
+    // Ne pas bloquer l'ingestion de données si l'alerte échoue
+  }
+}
