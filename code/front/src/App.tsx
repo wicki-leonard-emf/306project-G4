@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { Sidebar } from "./components/Sidebar"
+import { SidebarProvider } from "./components/ui/sidebar"
 import { RoomCard } from "./components/RoomCard"
 import { Button } from "./components/ui/button"
 import { Input } from "./components/ui/input"
@@ -407,10 +408,11 @@ export default function App({ onLogout }: AppProps) {
   })
 
   return (
-    <div className="flex h-screen bg-background text-foreground">
-      <Sidebar currentPage={currentPage} onPageChange={setCurrentPage} onLogout={onLogout} />
+    <SidebarProvider>
+      <div className="flex h-screen bg-background text-foreground">
+        <Sidebar currentPage={currentPage} onPageChange={setCurrentPage} onLogout={onLogout} userRole={userRole} />
 
-      {showRoomDetail && selectedRoom ? (
+        {showRoomDetail && selectedRoom ? (
         <RoomDetailPage
           room={selectedRoom}
           isSubscribed={subscribedRooms.includes(selectedRoom.id)}
@@ -712,6 +714,7 @@ export default function App({ onLogout }: AppProps) {
           onUpdateRoom={handleUpdateRoom}
         />
       )}
-    </div>
+      </div>
+    </SidebarProvider>
   )
 }
