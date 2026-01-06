@@ -265,7 +265,7 @@ export function Sidebar({ currentPage, onPageChange, onLogout }: SidebarProps) {
               <button
                 onClick={onLogout}
                 disabled={!onLogout}
-                className="p-2 rounded-lg transition-colors duration-200 hover:bg-red-100 hover:text-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-2 rounded-lg transition-colors duration-200 hover:bg-red-500 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Logout"
               >
                 <svg className="size-5 fill-current" fill="none" viewBox="0 0 20 20">

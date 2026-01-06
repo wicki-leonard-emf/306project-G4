@@ -2,6 +2,29 @@ import { useState, useEffect } from "react"
 import { Badge } from "./ui/badge"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "./ui/alert-dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "./ui/dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select"
 
 interface User {
   id: string
@@ -14,6 +37,11 @@ export function UsersPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
+  const [editingUser, setEditingUser] = useState<User | null>(null)
+  const [deletingUser, setDeletingUser] = useState<User | null>(null)
+  const [newRole, setNewRole] = useState<string>("")
+  const [isUpdating, setIsUpdating] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
     fetchUsers()
@@ -34,6 +62,68 @@ export function UsersPage() {
       setUsers([])
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleEditClick = (user: User) => {
+    setEditingUser(user)
+    setNewRole(user.role)
+  }
+
+  const handleDeleteClick = (user: User) => {
+    setDeletingUser(user)
+  }
+
+  const handleUpdateRole = async () => {
+    if (!editingUser || !newRole) return
+
+    setIsUpdating(true)
+    try {
+      const response = await fetch(`/api/users/${editingUser.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ role: newRole }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Erreur lors de la modification')
+      }
+
+      const updatedUser = await response.json()
+      setUsers(users.map(u => u.id === updatedUser.id ? updatedUser : u))
+      setEditingUser(null)
+      setError(null)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Une erreur est survenue')
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
+  const handleDeleteUser = async () => {
+    if (!deletingUser) return
+
+    setIsDeleting(true)
+    try {
+      const response = await fetch(`/api/users/${deletingUser.id}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Erreur lors de la suppression')
+      }
+
+      setUsers(users.filter(u => u.id !== deletingUser.id))
+      setDeletingUser(null)
+      setError(null)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Une erreur est survenue')
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -181,7 +271,7 @@ export function UsersPage() {
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <Button variant="ghost" size="sm">
+                          <Button variant="ghost" size="sm" onClick={() => handleEditClick(user)}>
                             <svg className="size-4" fill="none" viewBox="0 0 20 20">
                               <path
                                 d="M14.1667 2.49993C14.3856 2.28106 14.6455 2.10744 14.9313 1.98899C15.2171 1.87054 15.5236 1.80957 15.8334 1.80957C16.1432 1.80957 16.4497 1.87054 16.7355 1.98899C17.0213 2.10744 17.2812 2.28106 17.5001 2.49993C17.719 2.7188 17.8926 2.97863 18.011 3.2644C18.1295 3.55016 18.1905 3.85664 18.1905 4.16643C18.1905 4.47622 18.1295 4.7827 18.011 5.06847C17.8926 5.35423 17.719 5.61406 17.5001 5.83293L6.25008 17.0829L1.66675 18.3329L2.91675 13.7496L14.1667 2.49993Z"
@@ -193,7 +283,7 @@ export function UsersPage() {
                             </svg>
                             Modifier
                           </Button>
-                          <Button variant="ghost" size="sm">
+                          <Button variant="ghost" size="sm" onClick={() => handleDeleteClick(user)}>
                             <svg className="size-4" fill="none" viewBox="0 0 20 20">
                               <path
                                 d="M2.5 5H4.16667H17.5M15.8334 4.99999V16.6667C15.8334 17.1087 15.6578 17.5326 15.3453 17.8452C15.0327 18.1577 14.6088 18.3333 14.1667 18.3333H5.83341C5.39139 18.3333 4.96747 18.1577 4.65491 17.8452C4.34234 17.5326 4.16675 17.1087 4.16675 16.6667V4.99999H15.8334Z"
@@ -215,6 +305,63 @@ export function UsersPage() {
           )}
         </div>
       </div>
+
+      {/* Edit Modal */}
+      <Dialog open={!!editingUser} onOpenChange={(open) => !open && setEditingUser(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Modifier le rôle utilisateur</DialogTitle>
+            <DialogDescription>
+              Modifier le rôle de {editingUser?.email}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Nouveau rôle</label>
+              <Select value={newRole} onValueChange={setNewRole}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionner un rôle" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ADMIN">Administrateur</SelectItem>
+                  <SelectItem value="ENSEIGNANT">Enseignant</SelectItem>
+                  <SelectItem value="ELEVE">Élève</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex justify-end gap-2 pt-4">
+              <Button variant="outline" onClick={() => setEditingUser(null)} disabled={isUpdating}>
+                Annuler
+              </Button>
+              <Button onClick={handleUpdateRole} disabled={isUpdating || newRole === editingUser?.role}>
+                {isUpdating ? "Mise à jour..." : "Mettre à jour"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Modal */}
+      <AlertDialog open={!!deletingUser} onOpenChange={(open) => !open && setDeletingUser(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer l'utilisateur</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir supprimer {deletingUser?.email} ? Cette action est irréversible.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex justify-end gap-2">
+            <AlertDialogCancel disabled={isDeleting}>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteUser}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isDeleting ? "Suppression..." : "Supprimer"}
+            </AlertDialogAction>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
