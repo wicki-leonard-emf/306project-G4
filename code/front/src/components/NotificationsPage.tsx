@@ -33,8 +33,6 @@ interface Alert {
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "")
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "")
-
 // Fonction pour formater le timestamp
 const formatTimestamp = (dateString: string): string => {
   const date = new Date(dateString)
@@ -49,26 +47,26 @@ const formatTimestamp = (dateString: string): string => {
   if (diffHours < 24) return `Il y a ${diffHours} heure${diffHours > 1 ? 's' : ''}`
   if (diffDays === 1) return "Hier"
   if (diffDays < 7) return `Il y a ${diffDays} jours`
-  
+
   return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })
 }
 
 // Fonction pour convertir une alerte API en notification UI
 const convertAlertToNotification = (alert: Alert): Notification => {
   const { sensorType, thresholdType, value, threshold } = alert
-  
+
   // Déterminer le type et le titre
   let type: Notification["type"] = "warning"
   let title = ""
   let category = "Alerte"
-  
+
   const isCritical = Math.abs(value - threshold) > threshold * 0.2 // 20% au-delà du seuil
-  
+
   if (isCritical) {
     type = "error"
     category = "Critique"
   }
-  
+
   if (sensorType === "TEMPERATURE") {
     if (thresholdType === "max") {
       title = isCritical ? "Température critique" : "Alerte de température"
@@ -82,11 +80,11 @@ const convertAlertToNotification = (alert: Alert): Notification => {
       title = "Humidité basse"
     }
   }
-  
+
   // Détails avec la valeur et le nom de la salle
   const unit = sensorType === "TEMPERATURE" ? "°C" : "%"
   const details = `${alert.room.name} • ${Math.round(value)}${unit}`
-  
+
   return {
     id: alert.id,
     type,
@@ -159,7 +157,7 @@ export function NotificationsPage() {
   }
 
   const handleMarkAsRead = (id: string) => {
-    setNotifications(notifications.map(n => 
+    setNotifications(notifications.map(n =>
       n.id === id ? { ...n, read: true } : n
     ))
   }
@@ -298,7 +296,7 @@ export function NotificationsPage() {
                   <div className="flex items-center gap-3 ml-auto">
                     {!notification.read && (
                       <>
-                        <button 
+                        <button
                           className="text-xs text-muted-foreground hover:text-foreground leading-4"
                           onClick={() => handleMarkAsRead(notification.id)}
                         >
