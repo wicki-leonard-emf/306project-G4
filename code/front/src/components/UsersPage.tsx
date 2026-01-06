@@ -18,13 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "./ui/dialog"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select"
+import { Select } from "./ui/select"
 
 interface User {
   id: string
@@ -318,15 +312,11 @@ export function UsersPage() {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-2">Nouveau rôle</label>
-              <Select value={newRole} onValueChange={setNewRole}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner un rôle" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ADMIN">Administrateur</SelectItem>
-                  <SelectItem value="ENSEIGNANT">Enseignant</SelectItem>
-                  <SelectItem value="ELEVE">Élève</SelectItem>
-                </SelectContent>
+              <Select value={newRole} onChange={(e) => setNewRole(e.target.value)}>
+                <option value="">Sélectionner un rôle</option>
+                <option value="ADMIN">Administrateur</option>
+                <option value="ENSEIGNANT">Enseignant</option>
+                <option value="ELEVE">Élève</option>
               </Select>
             </div>
             <div className="flex justify-end gap-2 pt-4">
