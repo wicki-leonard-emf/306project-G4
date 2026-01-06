@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { toast } from "sonner"
 import { Sidebar } from "./components/Sidebar"
 import { RoomCard } from "./components/RoomCard"
 import { Button } from "./components/ui/button"
@@ -157,11 +158,41 @@ export default function App({ onLogout }: AppProps) {
     }
   }
 
-  const handleToggleSubscription = (roomId: string) => {
-    if (subscribedRooms.includes(roomId)) {
-      setSubscribedRooms(subscribedRooms.filter((id: string) => id !== roomId))
-    } else {
-      setSubscribedRooms([...subscribedRooms, roomId])
+  const handleToggleSubscription = async (roomId: string) => {
+    const isCurrentlySubscribed = subscribedRooms.includes(roomId)
+    const action = isCurrentlySubscribed ? 'DELETE' : 'POST'
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/subscriptions/rooms/${roomId}`, {
+        method: action,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || `Erreur ${response.status}`)
+      }
+
+      // Mettre à jour l'état local
+      if (isCurrentlySubscribed) {
+        setSubscribedRooms(subscribedRooms.filter((id: string) => id !== roomId))
+        toast.success('Désabonnement réussi', {
+          description: 'Vous ne recevrez plus de notifications pour cette salle'
+        })
+      } else {
+        setSubscribedRooms([...subscribedRooms, roomId])
+        toast.success('Abonnement réussi', {
+          description: 'Vous recevrez désormais des alertes par email'
+        })
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'abonnement:', error)
+      toast.error('Erreur', {
+        description: error instanceof Error ? error.message : 'Impossible de modifier l\'abonnement'
+      })
     }
   }
 
@@ -209,9 +240,16 @@ export default function App({ onLogout }: AppProps) {
         )
       )
 
+      toast.success('Salle modifiée', {
+        description: `La salle "${updates.name}" a été mise à jour avec succès`
+      })
+
       return await response.json()
     } catch (error) {
       console.error('Erreur lors de la mise à jour de la salle:', error)
+      toast.error('Erreur lors de la modification', {
+        description: error instanceof Error ? error.message : 'Impossible de modifier la salle'
+      })
       throw error
     }
   }
@@ -265,6 +303,9 @@ export default function App({ onLogout }: AppProps) {
       setLastFetch(new Date())
     } catch (error) {
       console.error("Erreur lors de la récupération des salles:", error)
+      toast.error('Erreur de chargement', {
+        description: 'Impossible de récupérer les données des salles'
+      })
     } finally {
       setIsRefreshing(false)
     }
@@ -273,6 +314,29 @@ export default function App({ onLogout }: AppProps) {
   // Fonction de rafraîchissement manuel
   const handleManualRefresh = () => {
     fetchRooms()
+    toast.info('Actualisation en cours...', {
+      description: 'Récupération des dernières données'
+    })
+  }
+
+  // Fonction pour récupérer les abonnements
+  const fetchSubscriptions = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/subscriptions/me`, {
+        credentials: 'include',
+      })
+
+      if (!response.ok) {
+        throw new Error(`Erreur ${response.status}`)
+      }
+
+      const subscriptions = await response.json()
+      const roomIds = subscriptions.map((sub: any) => sub.roomId)
+      setSubscribedRooms(roomIds)
+    } catch (error) {
+      console.error('Erreur lors de la récupération des abonnements:', error)
+      // Ne pas afficher de toast d'erreur ici pour ne pas polluer l'interface
+    }
   }
 
   // Effet pour la récupération automatique (toutes les 60 secondes)
@@ -286,7 +350,14 @@ export default function App({ onLogout }: AppProps) {
       }
     }
 
-    fetchRoomsIfMounted()
+    const fetchDataIfMounted = async () => {
+      if (isMounted) {
+        await fetchRooms()
+        await fetchSubscriptions()
+      }
+    }
+
+    fetchDataIfMounted()
     // Intervalle de 60 secondes (60000 ms) au lieu de 2 secondes
     intervalId = window.setInterval(fetchRoomsIfMounted, 60000)
 

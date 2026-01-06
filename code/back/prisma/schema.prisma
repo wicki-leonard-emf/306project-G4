@@ -50,6 +50,7 @@ model Room {
   // Relations
   sensors       Sensor[]
   subscriptions RoomSubscription[]
+  alerts        Alert[]
 
   @@map("rooms")
 }
@@ -107,4 +108,22 @@ model SensorReading {
   @@index([sensorId, timestamp(sort: Desc)])
   @@index([timestamp(sort: Desc)])
   @@map("sensor_readings")
+}
+
+// Modèle Alerte pour éviter le spam d'emails
+model Alert {
+  id              String      @id @default(cuid())
+  roomId          String
+  sensorType      SensorType
+  thresholdType   String      // 'min' ou 'max'
+  value           Float       // Valeur qui a déclenché l'alerte
+  threshold       Float       // Seuil dépassé
+  sentAt          DateTime    @default(now())
+  recipientCount  Int         // Nombre d'emails envoyés
+
+  // Relations
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@index([roomId, sensorType, sentAt(sort: Desc)])
+  @@map("alerts")
 }

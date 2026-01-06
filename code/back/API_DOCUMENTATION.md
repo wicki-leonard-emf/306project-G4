@@ -5,10 +5,233 @@
 ---
 
 ## Table des Matières
-1. [Salles (Rooms)](#salles-rooms)
-2. [Capteurs (Sensors)](#capteurs-sensors)
-3. [Lectures (Readings)](#lectures-readings)
-4. [Codes d'Erreur](#codes-derreur)
+1. [Authentification](#authentification)
+2. [Utilisateurs (Users)](#utilisateurs-users)
+3. [Salles (Rooms)](#salles-rooms)
+4. [Capteurs (Sensors)](#capteurs-sensors)
+5. [Lectures (Readings)](#lectures-readings)
+6. [Codes d'Erreur](#codes-derreur)
+
+---
+
+## Authentification
+
+### POST /api/auth/login
+**Authentifie un utilisateur et crée une session**
+
+**Headers:**
+```
+Content-Type: application/json
+```
+
+**Body:**
+```json
+{
+  "email": "user@school.ch",
+  "password": "password123"
+}
+```
+
+**Paramètres:**
+- `email` (string, requis) - Email de l'utilisateur
+- `password` (string, requis) - Mot de passe
+
+**Réponse (200):**
+```json
+{
+  "user": {
+    "id": "user-001",
+    "email": "user@school.ch",
+    "role": "ADMIN"
+  }
+}
+```
+
+**Erreurs:**
+- `400` - Email ou mot de passe invalide
+- `401` - Utilisateur non trouvé
+
+---
+
+### POST /api/auth/logout
+**Déconnecte l'utilisateur actuel**
+
+**Authentification:** Session (requis)
+
+**Réponse (200):**
+```json
+{
+  "message": "Déconnecté avec succès"
+}
+```
+
+---
+
+### GET /api/auth/me
+**Récupère les informations de l'utilisateur actuel**
+
+**Authentification:** Session (requis)
+
+**Réponse (200):**
+```json
+{
+  "user": {
+    "id": "user-001",
+    "email": "user@school.ch",
+    "role": "ADMIN"
+  }
+}
+```
+
+**Erreurs:**
+- `401` - Non authentifié
+
+---
+
+## Utilisateurs (Users)
+
+### GET /api/users
+**Récupère la liste de tous les utilisateurs**
+
+**Authentification:** Session requise + Rôle ADMIN
+
+**Réponse (200):**
+```json
+[
+  {
+    "id": "user-001",
+    "email": "admin@school.ch",
+    "role": "ADMIN",
+    "createdAt": "2025-12-09T09:00:00.000Z"
+  },
+  {
+    "id": "user-002",
+    "email": "teacher@school.ch",
+    "role": "ENSEIGNANT",
+    "createdAt": "2025-12-09T09:30:00.000Z"
+  },
+  {
+    "id": "user-003",
+    "email": "student@school.ch",
+    "role": "ELEVE",
+    "createdAt": "2025-12-09T10:00:00.000Z"
+  }
+]
+```
+
+**Erreurs:**
+- `401` - Non authentifié
+- `403` - Permissions insuffisantes (non-admin)
+
+**Exemple cURL:**
+```bash
+curl https://sensorhub-three.vercel.app/api/users \
+  -H "Cookie: connect.sid=..." \
+```
+
+---
+
+### GET /api/users/:id
+**Récupère les informations d'un utilisateur spécifique**
+
+**Authentification:** Session requise + Rôle ADMIN
+
+**Paramètres:**
+- `id` (string) - ID de l'utilisateur
+
+**Réponse (200):**
+```json
+{
+  "id": "user-002",
+  "email": "teacher@school.ch",
+  "role": "ENSEIGNANT",
+  "createdAt": "2025-12-09T09:30:00.000Z"
+}
+```
+
+**Erreurs:**
+- `401` - Non authentifié
+- `403` - Permissions insuffisantes (non-admin)
+- `404` - Utilisateur non trouvé
+
+---
+
+### PUT /api/users/:id
+**Modifie le rôle d'un utilisateur**
+
+**Authentification:** Session requise + Rôle ADMIN
+
+**Paramètres:**
+- `id` (string) - ID de l'utilisateur
+
+**Headers:**
+```
+Content-Type: application/json
+```
+
+**Body:**
+```json
+{
+  "role": "ENSEIGNANT"
+}
+```
+
+**Paramètres du body:**
+- `role` (string, requis) - Nouveau rôle: `ADMIN`, `ENSEIGNANT`, ou `ELEVE`
+
+**Réponse (200):**
+```json
+{
+  "id": "user-002",
+  "email": "teacher@school.ch",
+  "role": "ENSEIGNANT",
+  "createdAt": "2025-12-09T09:30:00.000Z"
+}
+```
+
+**Erreurs:**
+- `400` - Rôle invalide
+- `401` - Non authentifié
+- `403` - Permissions insuffisantes (non-admin)
+- `404` - Utilisateur non trouvé
+
+**Exemple cURL:**
+```bash
+curl -X PUT https://sensorhub-three.vercel.app/api/users/user-002 \
+  -H "Content-Type: application/json" \
+  -H "Cookie: connect.sid=..." \
+  -d '{
+    "role": "ADMIN"
+  }'
+```
+
+---
+
+### DELETE /api/users/:id
+**Supprime un utilisateur**
+
+**Authentification:** Session requise + Rôle ADMIN
+
+**Paramètres:**
+- `id` (string) - ID de l'utilisateur
+
+**Réponse (200):**
+```json
+{
+  "message": "User deleted successfully"
+}
+```
+
+**Erreurs:**
+- `401` - Non authentifié
+- `403` - Permissions insuffisantes (non-admin)
+- `404` - Utilisateur non trouvé
+
+**Exemple cURL:**
+```bash
+curl -X DELETE https://sensorhub-three.vercel.app/api/users/user-002 \
+  -H "Cookie: connect.sid=..." \
+```
 
 ---
 
@@ -436,15 +659,31 @@ node asdfasdf.js
 
 ## Résumé des Endpoints
 
+### Authentification
 | Méthode | Endpoint | Authentification | Description |
 |---------|----------|-----------------|-------------|
-| POST | `/api/rooms` | Non | **Créer une salle avec ses capteurs** |
+| POST | `/api/auth/login` | Non | Authentifier un utilisateur |
+| POST | `/api/auth/logout` | Oui | Déconnecter l'utilisateur |
+| GET | `/api/auth/me` | Oui | Récupérer l'utilisateur actuel |
+
+### Utilisateurs (Admin uniquement)
+| Méthode | Endpoint | Authentification | Description |
+|---------|----------|-----------------|-------------|
+| GET | `/api/users` | Oui (Admin) | Lister tous les utilisateurs |
+| GET | `/api/users/:id` | Oui (Admin) | Détails d'un utilisateur |
+| PUT | `/api/users/:id` | Oui (Admin) | Modifier le rôle d'un utilisateur |
+| DELETE | `/api/users/:id` | Oui (Admin) | Supprimer un utilisateur |
+
+### Salles & Capteurs
+| Méthode | Endpoint | Authentification | Description |
+|---------|----------|-----------------|-------------|
+| POST | `/api/rooms` | Non | Créer une salle avec ses capteurs |
 | GET | `/api/rooms` | Non | Lister toutes les salles |
 | GET | `/api/rooms/:id` | Non | Détails d'une salle |
-| POST | `/api/rooms/:roomId/readings` | Oui | Envoyer plusieurs lectures |
+| POST | `/api/rooms/:roomId/readings` | Oui (API-Key) | Envoyer plusieurs lectures |
 | GET | `/api/sensors` | Non | Lister tous les capteurs |
 | POST | `/api/sensors` | Non | Créer un capteur |
-| POST | `/api/sensors/readings` | Oui | Envoyer une lecture |
+| POST | `/api/sensors/readings` | Oui (API-Key) | Envoyer une lecture |
 
 ---
 
