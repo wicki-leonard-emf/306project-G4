@@ -11,9 +11,10 @@ interface SidebarProps {
   currentPage: string
   onPageChange: (page: string) => void
   onLogout?: () => void
+  userRole?: string
 }
 
-export function Sidebar({ currentPage, onPageChange, onLogout }: SidebarProps) {
+export function Sidebar({ currentPage, onPageChange, onLogout, userRole }: SidebarProps) {
   const [dashboardOpen, setDashboardOpen] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
 
@@ -143,145 +144,149 @@ export function Sidebar({ currentPage, onPageChange, onLogout }: SidebarProps) {
                       </span>
                       <Badge variant="default">10</Badge>
                     </button>
-                    <button
-                      className={`flex items-center px-3 py-2 pl-12 rounded-md hover:bg-muted transition-colors ${currentPage === "transactionHistory" ? "bg-muted" : ""
-                        }`}
-                      onClick={() => onPageChange("transactionHistory")}
-                    >
-                      <span className="font-semibold text-muted-foreground">
-                        Historique des transactions
-                      </span>
-                    </button>
+                    {userRole === "ADMIN" && (
+                      <button
+                        className={`flex items-center px-3 py-2 pl-12 rounded-md hover:bg-muted transition-colors ${currentPage === "transactionHistory" ? "bg-muted" : ""
+                          }`}
+                        onClick={() => onPageChange("transactionHistory")}
+                      >
+                        <span className="font-semibold text-muted-foreground">
+                          Historique des transactions
+                        </span>
+                      </button>
+                    )}
                   </div>
                 </CollapsibleContent>
-              </div>
-
-              {/* Utilisateurs */}
-              <button
-                className={`flex items-center px-3 py-2 rounded-md hover:bg-muted transition-colors ${currentPage === "users" ? "bg-muted" : ""
-                  }`}
-                onClick={() => onPageChange("users")}
-              >
-                <div className="flex gap-3 items-center">
-                  <svg className="size-6 text-muted-foreground" fill="none" viewBox="0 0 24 24">
-                    <path
-                      d={svgPaths.pae41680}
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                    />
-                  </svg>
-                  <span className="font-semibold text-muted-foreground">
-                    Utilisateurs
-                  </span>
-                </div>
-              </button>
+              </div>- Admin uniquement */}
+              {userRole === "ADMIN" && (
+                <button
+                  className={`flex items-center px-3 py-2 rounded-md hover:bg-muted transition-colors ${currentPage === "users" ? "bg-muted" : ""
+                    }`}
+                  onClick={() => onPageChange("users")}
+                >
+                  <div className="flex gap-3 items-center">
+                    <svg className="size-6 text-muted-foreground" fill="none" viewBox="0 0 24 24">
+                      <path
+                        d={svgPaths.pae41680}
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                      />
+                    </svg>
+                    <span className="font-semibold text-muted-foreground">
+                      Utilisateurs
+                    </span>
+                  </div>
+                </button>
+              )}n>
             </div>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="px-4 pb-8">
-          <div className="flex flex-col gap-6">
-            <div className="flex flex-col gap-1">
-              {/* Documentation */}
-              <button
-                className={`flex gap-3 items-center px-3 py-2 rounded-md hover:bg-muted transition-colors ${currentPage === "documentation" ? "bg-muted" : ""
-                  }`}
-                onClick={() => onPageChange("documentation")}
-              >
-                <svg className="size-6 text-muted-foreground" fill="none" viewBox="0 0 24 24">
-                  <path
-                    d="M10 2V10L13 7L16 10V2"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                  />
-                  <path
-                    d={svgPaths.p2460274}
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                  />
-                </svg>
-                <span className="font-semibold text-muted-foreground">
-                  Documentation
-                </span>
-              </button>
-
-              {/* Paramètres */}
-              <button
-                className={`flex gap-3 items-center px-3 py-2 rounded-md hover:bg-muted transition-colors ${currentPage === "settings" ? "bg-muted" : ""
-                  }`}
-                onClick={() => onPageChange("settings")}
-              >
-                <svg className="size-6 text-muted-foreground" fill="none" viewBox="0 0 24 24">
-                  <g clipPath="url(#clip0_settings)">
-                    <path
-                      d={svgPaths.p3cccb600}
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                    />
-                    <path
-                      d={svgPaths.p3737f500}
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                    />
-                  </g>
-                  <defs>
-                    <clipPath id="clip0_settings">
-                      <rect fill="white" height="24" width="24" />
-                    </clipPath>
-                  </defs>
-                </svg>
-                <span className="font-semibold text-muted-foreground">
-                  Paramètres
-                </span>
-              </button>
-            </div>
-
-            {/* Divider */}
-            <div className="h-px bg-border" />
-
-            {/* Account */}
-            <div className="flex items-center justify-between px-2">
-              <div className="flex gap-3 items-center">
-                <img
-                  alt="Olivia Rhye"
-                  className="size-10 rounded-full object-cover"
-                  src={imgAvatar}
-                />
-                <p className="font-semibold text-foreground text-sm">
-                  Olivia Rhye
-                </p>
-              </div>
-              <button
-                onClick={onLogout}
-                disabled={!onLogout}
-                className="p-2 rounded-lg transition-colors duration-200 hover:bg-red-500 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Logout"
-              >
-                <svg className="size-5 fill-current" fill="none" viewBox="0 0 20 20">
-                  <path
-                    d={svgPaths.p17b1b80}
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="1.67"
-                  />
-                </svg>
-              </button>
-            </div>
-          </div>
+          </button>
         </div>
       </div>
     </div>
+
+        {/* Footer */ }
+  <div className="px-4 pb-8">
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-1">
+        {/* Documentation */}
+        <button
+          className={`flex gap-3 items-center px-3 py-2 rounded-md hover:bg-muted transition-colors ${currentPage === "documentation" ? "bg-muted" : ""
+            }`}
+          onClick={() => onPageChange("documentation")}
+        >
+          <svg className="size-6 text-muted-foreground" fill="none" viewBox="0 0 24 24">
+            <path
+              d="M10 2V10L13 7L16 10V2"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+            />
+            <path
+              d={svgPaths.p2460274}
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+            />
+          </svg>
+          <span className="font-semibold text-muted-foreground">
+            Documentation
+          </span>
+        </button>
+
+        {/* Paramètres */}
+        <button
+          className={`flex gap-3 items-center px-3 py-2 rounded-md hover:bg-muted transition-colors ${currentPage === "settings" ? "bg-muted" : ""
+            }`}
+          onClick={() => onPageChange("settings")}
+        >
+          <svg className="size-6 text-muted-foreground" fill="none" viewBox="0 0 24 24">
+            <g clipPath="url(#clip0_settings)">
+              <path
+                d={svgPaths.p3cccb600}
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+              />
+              <path
+                d={svgPaths.p3737f500}
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+              />
+            </g>
+            <defs>
+              <clipPath id="clip0_settings">
+                <rect fill="white" height="24" width="24" />
+              </clipPath>
+            </defs>
+          </svg>
+          <span className="font-semibold text-muted-foreground">
+            Paramètres
+          </span>
+        </button>
+      </div>
+
+      {/* Divider */}
+      <div className="h-px bg-border" />
+
+      {/* Account */}
+      <div className="flex items-center justify-between px-2">
+        <div className="flex gap-3 items-center">
+          <img
+            alt="Olivia Rhye"
+            className="size-10 rounded-full object-cover"
+            src={imgAvatar}
+          />
+          <p className="font-semibold text-foreground text-sm">
+            Olivia Rhye
+          </p>
+        </div>
+        <button
+          onClick={onLogout}
+          disabled={!onLogout}
+          className="p-2 rounded-lg transition-colors duration-200 hover:bg-red-500 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+          title="Logout"
+        >
+          <svg className="size-5 fill-current" fill="none" viewBox="0 0 20 20">
+            <path
+              d={svgPaths.p17b1b80}
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="1.67"
+            />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+      </div >
+    </div >
   )
 }
