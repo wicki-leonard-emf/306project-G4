@@ -319,26 +319,68 @@ export default function App({ onLogout }: AppProps) {
 
       const data: ApiRoom[] = await response.json()
 
-      setRooms((previousRooms) => {
-        return data.map((roomFromApi) => {
-          const previousRoom = previousRooms.find((room) => room.id === roomFromApi.id)
+      // Récupérer l'historique pour chaque salle (en parallèle)
+      const roomsWithHistory = await Promise.all(
+        data.map(async (roomFromApi) => {
+          const previousRoom = rooms.find((room) => room.id === roomFromApi.id)
           const rawTemp = Number(roomFromApi.currentTemp ?? 0)
           const rawHumidity = Number(roomFromApi.currentHumidity ?? 0)
 
           const temperature = Number.isFinite(rawTemp) ? Math.round(rawTemp * 10) / 10 : 0
           const humidity = Number.isFinite(rawHumidity) ? Math.round(rawHumidity) : 0
 
-          const trend: "up" | "down" =
-            previousRoom && previousRoom.temperature > temperature ? "down" : "up"
+          // Récupérer l'historique de la journée (1d)
+          let chartData: number[] = []
+          let trend: "up" | "down" = "up"
+          let percentage = 0
 
-          const percentage = previousRoom && previousRoom.temperature > 0
-            ? Math.round(((temperature - previousRoom.temperature) / previousRoom.temperature) * 100)
-            : 0
+          try {
+            const historyResponse = await fetch(`${API_BASE_URL}/api/rooms/${roomFromApi.id}/history?period=1d`)
+            if (historyResponse.ok) {
+              const historyData = await historyResponse.json()
 
-          const normalizedValue = normalizeTempForChart(temperature)
-          const chartData = previousRoom?.chartData?.length
-            ? [...previousRoom.chartData.slice(-19), normalizedValue]
-            : Array.from({ length: 20 }, () => normalizedValue)
+              if (historyData.data && historyData.data.length > 0) {
+                // Extraire les températures des 24 dernières heures
+                const temps = historyData.data
+                  .filter((d: any) => d.temperature !== null)
+                  .map((d: any) => d.temperature)
+
+                if (temps.length > 0) {
+                  // Prendre jusqu'à 20 points équidistants pour le chart
+                  const step = Math.max(1, Math.floor(temps.length / 20))
+                  chartData = temps
+                    .filter((_: any, i: number) => i % step === 0)
+                    .slice(-20)
+                    .map((t: number) => normalizeTempForChart(t))
+
+                  // Calculer le trend et le pourcentage basé sur la moyenne des 4 dernières heures vs 4 heures précédentes
+                  const recentTemps = temps.slice(-4) // 4 dernières mesures
+                  const olderTemps = temps.slice(-8, -4) // 4 mesures d'avant
+
+                  if (recentTemps.length > 0 && olderTemps.length > 0) {
+                    const recentAvg = recentTemps.reduce((a: number, b: number) => a + b, 0) / recentTemps.length
+                    const olderAvg = olderTemps.reduce((a: number, b: number) => a + b, 0) / olderTemps.length
+
+                    trend = recentAvg > olderAvg ? "up" : "down"
+                    percentage = olderAvg > 0 ? Math.abs(Math.round(((recentAvg - olderAvg) / olderAvg) * 100)) : 0
+                  }
+                }
+              }
+            }
+          } catch (error) {
+            console.error(`Erreur lors de la récupération de l'historique pour ${roomFromApi.id}:`, error)
+          }
+
+          // Si pas de données d'historique, utiliser la valeur actuelle
+          if (chartData.length === 0) {
+            const normalizedValue = normalizeTempForChart(temperature)
+            chartData = Array.from({ length: 20 }, () => normalizedValue)
+          }
+
+          // Si les données ne font pas 20 points, compléter avec la valeur actuelle
+          while (chartData.length < 20) {
+            chartData.unshift(chartData[0] || normalizeTempForChart(temperature))
+          }
 
           return {
             id: roomFromApi.id,
@@ -353,7 +395,9 @@ export default function App({ onLogout }: AppProps) {
             description: roomFromApi.description,
           }
         })
-      })
+      )
+
+      setRooms(roomsWithHistory)
       setLastFetch(new Date())
     } catch (error) {
       console.error("Erreur lors de la récupération des salles:", error)
