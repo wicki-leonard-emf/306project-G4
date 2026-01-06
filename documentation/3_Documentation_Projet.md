@@ -2,8 +2,8 @@ Informaticien/-ne CFC
 Travail pratique individuel 2025 (TPI)
 
 Modèle de rapport v1.4
-Nom du candidat : Leonard Wiki, Gabriel Beer, Cyril Dubusc
-« Nom du projet »
+Nom des candidats : Leonard Wiki, Gabriel Beer, Cyril Dubusc
+« SensorHub »
 
 # Sommaire
 
@@ -54,17 +54,22 @@ Nom du candidat : Leonard Wiki, Gabriel Beer, Cyril Dubusc
 ## Analyse de la situation initiale
 
 ### État actuel
+
 Actuellement, les salles de classe de l'école EMF ne disposent pas d'un système centralisé de monitoring des conditions environnementales (température et humidité). Les variations de température et d'humidité affectent le confort des étudiants et l'efficacité pédagogique, mais il n'existe pas d'outil pour surveiller ou analyser ces paramètres en temps réel.
 
 ### Problème identifié
+
 Sans système de monitoring, l'école ne peut pas :
+
 - Détecter rapidement les variations anormales de température/humidité
 - Analyser l'impact des conditions environnementales sur le confort des salles
 - Optimiser le fonctionnement des systèmes de climatisation/ventilation
 - Archiver et analyser les données historiques
 
 ### Opportunité du projet
+
 Développer un système automatisé de monitoring des capteurs (sensorHub) permettra de :
+
 - Surveiller en temps réel les conditions dans chaque salle de classe
 - Générer des alertes en cas de dépassement de seuils
 - Fournir une interface de gestion aux enseignants et administrateurs
@@ -73,7 +78,9 @@ Développer un système automatisé de monitoring des capteurs (sensorHub) perme
 ## Analyse de l'état désiré
 
 ### Système cible (sensorHub)
+
 Le système sensorHub doit permettre :
+
 - **Collecte de données** : Des capteurs Phidget (température et humidité) connectés à une Raspberry Pi envoient automatiquement les données à intervalles réguliers
 - **Stockage centralisé** : Toutes les lectures sont stockées dans une base de données PostgreSQL avec timestamps et métadonnées
 - **Consultation en temps réel** : Un tableau de bord web affiche les conditions actuelles de chaque salle avec visualisation des trends
@@ -82,7 +89,9 @@ Le système sensorHub doit permettre :
 - **API REST** : Backend Express.js exposant les endpoints pour consultation et gestion des données
 
 ### Architecture souhaitée
+
 L'application est architecturée en trois composants :
+
 1. **Frontend (React)** : Tableau de bord interactif, gestion des utilisateurs et des seuils
 2. **Backend (Express.js + Prisma)** : API REST, gestion de base de données, authentification
 3. **Raspberry Pi** : Script Node.js pour la lecture des capteurs Phidget et l'envoi des données
@@ -93,23 +102,81 @@ L'application est architecturée en trois composants :
 
 Voici les différentes tâches exigées durant la phase d'analyse :
 
-- …
+- Analyse du besoin du client (Intendance, Enseignants, Direction) concernant le suivi climatique des salles
+- Identification des problèmes actuels : interventions réactives tardives et absence de données historiques
+- Définition des objectifs du système (Objectifs SMART : monitoring temps réel, alertes ciblées, historique 7 jours)
+- Détermination du périmètre du projet : inclusion du monitoring web et des alertes, exclusion de l'app mobile native
+- Analyse des utilisateurs cibles (non-techniciens) et de leurs attentes en ergonomie
+- Identification des contraintes techniques : Capteurs Phidget obligatoires, solution web responsive, matériel Raspberry Pi
+- Analyse des contraintes temporelles : respect du budget de 43 heures et des jalons du module 306
+- Définition des exigences fonctionnelles : Tableau de bord temps réel, Alertes automatisées, Historique des mesures, Configuration des seuils
+- Définition des exigences non fonctionnelles (KPI) : Ergonomie (90% satisfaction), Fiabilité des alertes (95%), Facilité de prise en main (<10 min)
+- Analyse des risques du projet (connexion capteurs, calibration, adoption utilisateur) et définition des mesures d’atténuation
+- Validation des exigences et du cahier des charges avec le supérieur professionnel
 
 ### Conception
 
 Voici les différentes tâches exigées durant la phase de conception
 
-- …
+- Conception de l’architecture globale du système : Flux de données IoT (Phidget/RPi) vers Backend puis Frontend
+- Choix des technologies : Capteurs Phidget HUM1000_0, Raspberry Pi (Node.js), Backend (Express/Prisma), Base de données (PostgreSQL/Neon), Frontend (React/Vite)
+- Modélisation du système à l’aide de diagrammes UML (Cas d’utilisation, Classes, Séquence système)
+- Conception de la structure de la base de données relationnelle (Tables : Users, Rooms, Sensors, Readings, Subscriptions)
+- Définition du fonctionnement du système d’alertes : logique de comparaison des seuils min/max et déclenchement
+- Conception de l’interface utilisateur : Maquettes du Tableau de bord, Page de login, Configuration des seuils
+- Définition des règles de gestion : Persistance des données (historique), fréquence de lecture, gestion des erreurs capteurs
+- Planification détaillée des étapes de réalisation (Sprints, répartition des tâches)
+- Validation de la conception technique avant le début du développement
 
 ### Réalisation
+
+Voici les différentes tâches exigées durant la phase de réalisation :
+
+- Installation physique et connexion des capteurs de température et d’humidité Phidget sur le Hub/RPi
+- Configuration du Raspberry Pi (OS, Node.js) pour l'exécution automatique des scripts
+- Développement du script de collecte : lecture périodique des capteurs et envoi à l'API
+- Mise en place du Backend v1 : Création du projet Express, configuration Prisma et connexion Neon
+- Développement des API REST : Endpoints pour la réception des mesures et la consultation frontend
+- Développement de l'Application Web (React) : Interface responsive, composants graphiques (charts)
+- Implémentation de la logique d'alertes : Vérification des seuils à chaque réception de mesure
+- Tests fonctionnels complets : Vérification de la chaine d'acquisition (Capteur -> UI) et des notifications
+- Corrections de bugs et améliorations de l'interface suite aux premiers retours
+- Rédaction des livrables documentaires : Guide utilisateur, Guide de démarrage, Documentation API
+- Préparation et déploiement de la solution dans la salle pilote pour validation finale
 
 ## Organisation du projet
 
 ### Méthodes de gestion de projet
 
+L'équipe utilise une méthode agile légère adaptée à la taille du groupe afin d'assurer flexibilité et visibilité :
+
+- **Planification** : calendrier Excel pour planifier les phases (analyse, conception, réalisation, tests, documentation) et suivre les jalons du Module 306.
+- **Tâches** : découpage en tâches claires et priorisées, maintenues dans un tableau de bord Kanban.
+- **Suivi** : Kanban sur GitHub (colonnes : À faire, En cours, Terminé) pour le suivi quotidien de l'avancement.
+- **Coordination** : points réguliers et mise à jour du journal de travail exigé par le Module 306 pour tracer l'activité de chaque membre.
+- **Validation** : revues des livrables et validation par le supérieur professionnel avant les jalons clés.
+
+Cette organisation facilite la répartition du travail, la traçabilité des actions et la réactivité en cas d'incident.
+
 ### Participants
 
+Équipe projet :
+
+- **Beer Gabriel** — développement frontend / tests UI
+- **Wicki Léonard** — développement backend / base de données
+- **Dubusc Cyril** — intégration RPi / scripts capteurs
+
+Chaque membre contribue aux phases d'analyse, conception, réalisation, tests et documentation. Les tâches sont réparties en fonction des compétences tout en veillant à un partage des connaissances (pair programming, revues de code).
+
 ### Sauvegardes
+
+Pour limiter les risques de perte de données et garantir la traçabilité :
+
+- **Code & documentation** : gestion via GitHub (commits réguliers, branches de travail, historique des modifications).
+- **Documents de projet** : copies sauvegardées régulièrement (ex. OneDrive ou emplacement cloud) comme prévu dans l'analyse des risques.
+- **Base de données** : utilisation d'un service PostgreSQL (Neon) pour la persistance ; prévoir exports réguliers des données pour sauvegarde avant déploiement.
+
+Ces pratiques reprennent les éléments du cahier des charges et de l'analyse des risques afin d'assurer la continuité et la reproductibilité du projet.
 
 # Analyse préliminaire
 
@@ -117,26 +184,36 @@ Voici les différentes tâches exigées durant la phase de conception
 
 ### Analyse de l'état actuel
 
-Résumé de l'état actuel avant projet
+L'analyse initiale reprend le Business Case et le Cahier des Charges : les salles n'ont pas de monitoring centralisé, les interventions sont réactives, et il n'existe pas d'historique exploitable. Le besoin est de fournir un outil léger, utilisable par des non-techniciens, permettant la surveillance en temps réel et l'émission d'alertes.
 
 ### Analyse de l'état désiré
 
-Résumé de l'état désiré
+L'état désiré est un système déployable en salle pilote qui collecte automatiquement la température et l'humidité via des capteurs Phidget reliés à un Raspberry Pi, stocke les lectures dans une base PostgreSQL, et fournit une interface web responsive pour consultation, configuration des seuils et gestion des abonnements.
 
 ### Objectifs
 
-Reprends les objectifs SMART définis dans la phase de lancement, en les reformulant si nécessaire pour les adapter au cahier des charges
+Objectifs (SMART) :
+
+- Spécifique : fournir un tableau de bord web affichant température et humidité par salle et un système d'alertes paramétrable.
+- Mesurable : historique minimum de 7 jours, KPI d'ergonomie (90% satisfaction) et fiabilité des alertes (≥95%).
+- Atteignable : démarrage par un MVP (ingestion RPi → API → UI) pour valider la chaîne.
+- Réaliste : respecter le périmètre défini (pas d'app native, déploiement pilote uniquement) et le budget temps (43 heures estimées).
+- Temporel : livrables et déploiement pilote à la fin du Module 306.
 
 ## Variantes
 
-Quelles sont les différentes variantes avec explication et détails.
+Variantes considérées :
+
+- MVP : ingestion simple, affichage temps réel, pas d'authentification forte (utilisé pour valider l'architecture).
+- Version complète : authentification, gestion des utilisateurs, notifications (email/push), historique amélioré et administration des seuils.
 
 ## Rentabilité
 
-Analyse de rentabilité du projet avec description et détails
+Résumé de rentabilité attendu : réduction des interventions réactives (gain de temps pour l'intendance), amélioration du confort des apprenants, et création d'une base de données structurée pour décisions futures. Le projet vise un coût faible (utilisation de Raspberry Pi et Phidget) et une valeur ajoutée opérationnelle rapide après déploiement pilote.
 
 ## Analyse de risque
 
+Voir cahier des charges
 Faire une matrice des risques selon les risques détectés dans le business case. Exemple de matrice de risque :
 
 | ID  | Risque                                       | Probabilité | Impact | Criticité | Plan d'atténuation                                                      |
@@ -154,69 +231,141 @@ Faire une matrice des risques selon les risques détectés dans le business case
 
 ### Acteurs
 
+Acteurs identifiés :
+
+- **Administrateur** : configure salles, seuils et gère utilisateurs.
+- **Enseignant** : consulte les salles, s'abonne aux alertes.
+- **Élève** : consultation limitée des données (sensibilisation).
+- **Raspberry Pi (système IoT)** : envoie les lectures via `X-API-Key`.
+
 ## Diagrammes d'activités / de séquence
 
+Les diagrammes ont été modélisés dans Enterprise Architect et exportés dans `documentation/5_Modele_Analyses_UML.qea`. Un aperçu :
+![img](./use-case.png)
+
 ## Maquettes
+
+Les maquettes fonctionnelles sont incarnées par les composants React dans `code/front/src/components/` (ex. `RoomCard.tsx`, `RoomDetailPage.tsx`, `RoomThresholdModal.tsx`). Le frontend utilise Recharts pour les graphiques et Radix/UI pour les composants.
 
 # Concept
 
 ## Architecture du système
 
+Architecture technique :
+
+- Couche edge : Raspberry Pi + Phidget → script Node.js envoie lectures (POST) vers l'API.
+- Couche backend : Express.js expose `/api/*` (routes définies dans `code/back/src/routes/`) ; Prisma gère la persistance vers PostgreSQL (Neon).
+- Couche frontend : React + Vite, consulte l'API et affiche dashboards et historiques.
+
 ## Diagramme Entité-Relation
+
+Le schéma Prisma (`code/back/prisma/schema.prisma`) définit les entités principales : `User`, `Room`, `Sensor`, `SensorReading`, `RoomSubscription`. Voir le fichier pour la structure détaillée et les relations.
 
 ## Modèle relationnel de la base de données
 
+Résumé du modèle relationnel :
+
+- `users` : id, email, password (hash), role, timestamps.
+- `rooms` : id, name, description, seuils (minTemp, maxTemp, minHumidity, maxHumidity), alertDelay.
+- `sensors` : id, roomId, type (TEMPERATURE/HUMIDITY), serialNumber.
+- `sensor_readings` : id, sensorId, value, timestamp.
+- `room_subscriptions` : id, userId, roomId (unique user-room).
+
 ## Diagrammes de classes
+
+Les diagrammes de classes sont disponibles dans `documentation/5_Modele_Analyses_UML.qea` et reflètent les entités Prisma et les contrôleurs Express.
 
 ## Diagrammes de séquence des interactions
 
+Les séquences modélisent principalement :
+
+- Envoi de lecture : RPi → `POST /api/sensors/readings` (X-API-Key) → backend validation → création `SensorReading`.
+- Consultation historique : Frontend → `GET /api/rooms/:roomId/history?period=...` → backend agrège readings → frontend affiche chart.
+
 ## Concept de tests
+
+Stratégie de tests :
+
+- Tests API via Postman (collection `code/back/Postman_Collection.json`).
+- Tests manuels frontend pour parcours utilisateur (login, consultation, configuration seuils).
+- Vérifications spécifiques : validation des plages de valeurs (backend), comportement en cas de clé API manquante/incorrecte.
 
 ### Protocole de tests
 
+Voir la section "Tests" pour le protocole synthétique. La collection Postman contient les cas d'API essentiels (création salle, ingestion, erreurs clés API).
+
 # Réalisation
+
+Résumé de réalisation :
+
+- Backend : implémentation Express + Prisma (`code/back/src/`), routes pour rooms, sensors, auth, subscriptions.
+- Seed : `code/back/prisma/seed.ts` crée une salle `C114` et deux capteurs `PHIDGET-TEMP-001`, `PHIDGET-HUM-001`.
+- Frontend : composants React et pages dans `code/front/src/`, routage géré par `AppRouter.tsx`.
+- RPi : scripts d'ingestion attendus d'envoyer `X-API-Key` et payload JSON (exemples dans Postman collection).
 
 # Tests
 
 ## Procédure de test
 
-Maintenant que la réalisation est terminée, il faut compléter le protocole de tests créé précédemment. Celui-ci comporte des tests à effectuer sur l'application cliente mais également sur Postman.
+Procédure recommandée :
+
+1. Importer `code/back/Postman_Collection.json` dans Postman et définir la variable `api_key`.
+2. Exécuter la suite API : création de salle (`POST /api/rooms`), vérification `GET /api/rooms`, ingestion de lectures (`POST /api/rooms/:roomId/readings` et `POST /api/sensors/readings`).
+3. Vérifier les codes réponses et la structure des payloads (exemples dans les contrôleurs).
+4. Exécuter tests manuels frontend : login (si activé), navigation dashboard, ouverture `RoomDetailPage`, affichage graphique et sauvegarde des seuils via `RoomThresholdModal`.
+5. Consigner les résultats dans le protocole de tests et noter les anomalies.
 
 ## Protocole de tests
 
-| Numéro de test  | Date            | Description | Résultat désirée |
-| --------------- | --------------- | ----------- | ---------------- |
-| F1              | 13.06.2025 - 8h | description | Resultat ?       |
-| Résultat obt. ? |
-| Succès          |
-| Numéro de test  | Date            | Description | Résultat désirée |
-| F2              | 13.06.2025 - 8h | description | resultat         |
-| Résultat obt. ? |
-| Succès          |
+| Numéro de test | Date | Description                    | Résultat désiré                                                |
+| -------------: | ---: | ------------------------------ | -------------------------------------------------------------- |
+|             F1 | (ex) | API - Create room              | 201 Created + body contenant `room`                            |
+|             F2 | (ex) | API - Get rooms                | 200 OK + liste des salles avec `currentTemp`/`currentHumidity` |
+|             F3 | (ex) | API - Ingest batch readings    | 201 Created, résumé `created`/`failed`                         |
+|             F4 | (ex) | API - Missing API key          | 401 Unauthorized                                               |
+|             F5 | (ex) | Frontend - Dashboard rendering | Affiche les `RoomCard` et indicateurs de seuils                |
 
 # Conclusion
 
 ## Améliorations possibles
 
+- Notifications (email / push) pour les alertes.
+- Tableau d'analyse avancée sur l'historique (moyennes, percentiles, corrélations).
+- Déploiement multi-salles et automatisation des sauvegardes/exports de la base.
+- Tests automatisés (CI) et pipelines de déploiement.
+
 ## Auto-évaluation
+
+À renseigner par les membres du projet : bilan compétences acquises, difficultés rencontrées et respect des objectifs temps/qualité.
 
 ## Conclusion du module de Gabriel
 
+_(à compléter par Gabriel)_
+
 ## Conclusion du module de Léonard
+
+_(à compléter par Léonard)_
 
 ## Conclusion du module de Cyril
 
+_(à compléter par Cyril)_
+
 # Bibliographie : liste des sources et références
+
+- `documentation/2_CahierDesCharges.md` — Cahier des charges du projet.
+- `documentation/1_BusinessCase.md` — Business Case et justification.
+- `code/back/Postman_Collection.json` — Collection Postman utilisée pour les tests API.
+- Documentation Phidget — pour l'intégration des capteurs (lien dans le cahier des charges).
+- Prisma documentation — https://www.prisma.io/docs
 
 # Glossaire
 
-|     |     |
-| --- | --- |
-|     |     |
-|     |     |
-|     |     |
-|     |     |
-|     |     |
-|     |     |
-|     |     |
-|     |     |
+| Terme   | Définition                                                            |
+| ------- | --------------------------------------------------------------------- |
+| RPi     | Raspberry Pi, unité edge qui lit les capteurs et envoie les données   |
+| Phidget | Capteurs Phidget utilisés pour température et humidité                |
+| API     | Interface REST fournie par le backend (`/api` endpoints)              |
+| KPI     | Indicateur clé de performance (ex : ergonomie, fiabilité des alertes) |
+| MVP     | Minimum Viable Product — version initiale validant la chaine complète |
+
+| | |
