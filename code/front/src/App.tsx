@@ -10,9 +10,7 @@ import { EditRoomModal } from "./components/EditRoomModal"
 import { ThresholdModal } from "./components/ThresholdModal"
 import { RoomDetailPage } from "./components/RoomDetailPage"
 import { SettingsPage } from "./components/SettingsPage"
-import { NotificationsPage } from "./components/NotificationsPage"
 import { UsersPage } from "./components/UsersPage"
-import { TransactionHistoryPage } from "./components/TransactionHistoryPage"
 import { DocumentationPage } from "./components/DocumentationPage"
 import svgPaths from "./imports/svg-734m2ckqag"
 
@@ -520,12 +518,8 @@ export default function App({ onLogout }: AppProps) {
               />
             ) : currentPage === "settings" ? (
               <SettingsPage />
-            ) : currentPage === "notifications" ? (
-              <NotificationsPage />
             ) : currentPage === "users" ? (
               <UsersPage />
-            ) : currentPage === "transactionHistory" ? (
-              <TransactionHistoryPage />
             ) : currentPage === "documentation" ? (
               <DocumentationPage />
             ) : (
@@ -788,33 +782,31 @@ export default function App({ onLogout }: AppProps) {
               </div>
             )}
           </div>
-        </div>
-
-        {/* Modals */}
-        <AddRoomModal
-          open={addRoomModalOpen}
-          onOpenChange={setAddRoomModalOpen}
-          onAddRoom={handleAddRoom}
-        />
-
-        <ThresholdModal
-          open={thresholdModalOpen}
-          onOpenChange={setThresholdModalOpen}
-          onSave={handleSaveThresholds}
-        />
-
-        {roomToEdit && (
-          <EditRoomModal
-            open={editRoomModalOpen}
-            onOpenChange={setEditRoomModalOpen}
-            room={{
-              id: roomToEdit.id,
-              name: roomToEdit.room,
-              description: roomToEdit.description,
-            }}
-            onUpdateRoom={handleUpdateRoom}
+          <AddRoomModal
+            open={addRoomModalOpen}
+            onOpenChange={setAddRoomModalOpen}
+            onAddRoom={handleAddRoom}
           />
-        )}
+
+          <ThresholdModal
+            open={thresholdModalOpen}
+            onOpenChange={setThresholdModalOpen}
+            onSave={handleSaveThresholds}
+          />
+
+          {roomToEdit && (
+            <EditRoomModal
+              open={editRoomModalOpen}
+              onOpenChange={setEditRoomModalOpen}
+              room={{
+                id: roomToEdit.id,
+                name: roomToEdit.room,
+                description: roomToEdit.description,
+              }}
+              onUpdateRoom={handleUpdateRoom}
+            />
+          )}
+        </div>
       </div>
     </SidebarProvider>
   )

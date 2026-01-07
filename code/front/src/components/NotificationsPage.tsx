@@ -179,7 +179,7 @@ export function NotificationsPage() {
   }
 
   return (
-    <div className="flex-1 overflow-auto bg-background">
+    <div className="flex-1 overflow-auto w-full bg-background">
       <div className="flex flex-col h-full">
         {/* Header */}
         <div className="bg-card border-b border-border">
