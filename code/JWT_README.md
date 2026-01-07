@@ -7,6 +7,7 @@ Votre projet utilise maintenant **JWT (JSON Web Tokens)** au lieu des sessions E
 ## 📁 Nouveaux fichiers créés
 
 ### Frontend
+
 1. **`src/services/authService.ts`**
    - Service pour gérer l'authentification (login, register, logout)
    - Stocke le token dans `localStorage`
@@ -22,11 +23,13 @@ Votre projet utilise maintenant **JWT (JSON Web Tokens)** au lieu des sessions E
 ## 🔄 Fichiers modifiés
 
 ### Backend
+
 - `src/controllers/auth.controller.js` - Génère et retourne des tokens JWT
 - `src/middleware/auth.middleware.js` - Vérifie les tokens JWT au lieu des sessions
 - `.env` - Ajout de `JWT_SECRET` et `JWT_EXPIRES_IN`
 
 ### Frontend
+
 - `src/AppRouter.tsx` - Vérifie le token au démarrage
 - `src/components/Login.tsx` - Utilise le nouveau service d'authentification
 - `src/components/Register.tsx` - Utilise le nouveau service d'authentification
@@ -51,6 +54,7 @@ Votre projet utilise maintenant **JWT (JSON Web Tokens)** au lieu des sessions E
 ## ⚙️ Configuration
 
 Dans `code/back/.env`, vous pouvez configurer :
+
 ```env
 JWT_SECRET="votre-secret-tres-securise"  # À changer en production !
 JWT_EXPIRES_IN="7d"                       # Durée de validité du token (7 jours par défaut)
@@ -59,6 +63,7 @@ JWT_EXPIRES_IN="7d"                       # Durée de validité du token (7 jour
 ## 🔒 Sécurité
 
 ⚠️ **IMPORTANT pour la production** : Changez `JWT_SECRET` avec une valeur aléatoire et sécurisée :
+
 ```bash
 node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 ```

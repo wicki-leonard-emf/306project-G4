@@ -7,15 +7,18 @@ Le projet a été migré d'un système d'authentification basé sur les **sessio
 ## 📦 Nouveaux Fichiers
 
 ### Backend
+
 - Aucun nouveau fichier, modifications dans les fichiers existants
 
 ### Frontend
+
 - `src/services/authService.ts` - Service centralisé pour la gestion de l'authentification
 - `src/lib/fetchWithAuth.ts` - Wrapper pour les appels API avec authentification automatique
 
 ## 🔧 Modifications Backend
 
 ### 1. Installation de jsonwebtoken
+
 ```bash
 npm install jsonwebtoken
 ```
@@ -23,17 +26,21 @@ npm install jsonwebtoken
 ### 2. Fichiers Modifiés
 
 #### `src/controllers/auth.controller.js`
+
 - Import de `jsonwebtoken`
 - Génération de tokens JWT lors du login et register
 - Suppression de la gestion des sessions
 - Les routes retournent maintenant un objet `{ user, token }`
 
 #### `src/middleware/auth.middleware.js`
+
 - Vérification du token JWT depuis le header `Authorization: Bearer <token>`
 - Gestion des erreurs de token (expiré, invalide)
 
 #### `.env`
+
 Ajout des variables d'environnement :
+
 ```env
 JWT_SECRET="your-jwt-secret-change-in-production-use-strong-random-string"
 JWT_EXPIRES_IN="7d"
@@ -44,6 +51,7 @@ JWT_EXPIRES_IN="7d"
 ### 1. Service d'Authentification
 
 Le nouveau service `authService` gère :
+
 - ✅ Stockage du token dans `localStorage`
 - ✅ Login et Register avec récupération du token
 - ✅ Validation automatique du token
@@ -82,6 +90,7 @@ Response: { user: {...}, token: "eyJhbGc..." }
 ### Frontend
 
 #### Authentification
+
 ```typescript
 import { authService } from './services/authService'
 
@@ -102,6 +111,7 @@ const user = await authService.getCurrentUser()
 ```
 
 #### Appels API
+
 ```typescript
 import { fetchWithAuth } from './lib/fetchWithAuth'
 
@@ -120,13 +130,17 @@ const response = await fetchWithAuth('/api/rooms', {
 ## 🔒 Sécurité
 
 ### Stockage du Token
+
 Le token est stocké dans `localStorage`. Pour plus de sécurité en production, considérez :
+
 - Utiliser `httpOnly` cookies (nécessite un changement d'architecture)
 - Implémenter un système de refresh tokens
 - Réduire la durée de vie du token (actuellement 7 jours)
 
 ### Variables d'Environnement
+
 ⚠️ **IMPORTANT** : Changez `JWT_SECRET` en production avec une valeur forte et aléatoire :
+
 ```bash
 # Générer un secret fort
 node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
