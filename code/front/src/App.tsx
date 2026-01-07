@@ -512,7 +512,7 @@ export default function App({ onLogout }: AppProps) {
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
                         <h1 className="text-[30px] leading-[38px] font-semibold text-foreground mb-1">
-                          Bon retour, Olivia
+                          Bon retour {userEmail ? userEmail.split('@')[0] : ' !'} !
                         </h1>
                         <p className="text-muted-foreground">
                           Suivez et gérez le climat des salles de classes
