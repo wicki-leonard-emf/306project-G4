@@ -4,32 +4,30 @@ import { LoginPage } from "./pages/LoginPage"
 import { RegisterPage } from "./pages/RegisterPage"
 import App from "./App"
 import { ProtectedRoute } from "./ProtectedRoute"
-
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "")
+import { authService } from "./services/authService"
 
 export function AppRouter() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
-  // Check for existing session on mount
+  // Check for existing token on mount
   useEffect(() => {
-    const checkSession = async () => {
+    const checkAuth = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
-          credentials: "include"
-        })
-
-        if (response.ok) {
-          setIsAuthenticated(true)
+        // Check if token exists and is valid
+        if (authService.isAuthenticated()) {
+          const isValid = await authService.validateToken()
+          setIsAuthenticated(isValid)
         }
       } catch (err) {
-        console.error("Session check error:", err)
+        console.error("Auth check error:", err)
+        setIsAuthenticated(false)
       } finally {
         setIsLoading(false)
       }
     }
 
-    checkSession()
+    checkAuth()
   }, [])
 
   const handleLoginSuccess = () => {
@@ -42,10 +40,7 @@ export function AppRouter() {
 
   const handleLogout = async () => {
     try {
-      await fetch(`${API_BASE_URL}/api/auth/logout`, {
-        method: "POST",
-        credentials: "include"
-      })
+      await authService.logout()
     } catch (err) {
       console.error("Logout error:", err)
     } finally {

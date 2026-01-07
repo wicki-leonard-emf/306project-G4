@@ -1,8 +1,13 @@
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
 import { generateId } from '../lib/generateId.js';
 
 const prisma = new PrismaClient();
+
+// JWT Secret - should be in environment variables
+const JWT_SECRET = process.env.JWT_SECRET || 'your-jwt-secret-change-in-production';
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 
 // Validate email format
 const isValidEmail = (email) => {
@@ -50,17 +55,21 @@ export const register = async (req, res) => {
       }
     });
 
-    // Store user info in session
-    req.session.userId = user.id;
-    req.session.userRole = user.role;
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: user.id, email: user.email, role: user.role },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRES_IN }
+    );
 
-    // Return user without password
+    // Return user without password and include token
     res.status(201).json({
       user: {
         id: user.id,
         email: user.email,
         role: user.role
-      }
+      },
+      token
     });
   } catch (error) {
     console.error('Register error:', error);
@@ -94,17 +103,21 @@ export const login = async (req, res) => {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-    // Store user info in session
-    req.session.userId = user.id;
-    req.session.userRole = user.role;
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: user.id, email: user.email, role: user.role },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRES_IN }
+    );
 
-    // Return user without password
+    // Return user without password and include token
     res.json({
       user: {
         id: user.id,
         email: user.email,
         role: user.role
-      }
+      },
+      token
     });
   } catch (error) {
     console.error('Login error:', error);
@@ -115,12 +128,13 @@ export const login = async (req, res) => {
 // Get current user
 export const getMe = async (req, res) => {
   try {
-    if (!req.session.userId) {
+    // User info is now in req.user (set by auth middleware)
+    if (!req.user) {
       return res.status(401).json({ error: 'Not authenticated' });
     }
 
     const user = await prisma.user.findUnique({
-      where: { id: req.session.userId }
+      where: { id: req.user.userId }
     });
 
     if (!user) {
@@ -143,12 +157,9 @@ export const getMe = async (req, res) => {
 // Logout user
 export const logout = async (req, res) => {
   try {
-    req.session.destroy((err) => {
-      if (err) {
-        return res.status(500).json({ error: 'Logout failed' });
-      }
-      res.json({ message: 'Logged out successfully' });
-    });
+    // With JWT, logout is handled client-side by removing the token
+    // We just return a success message
+    res.json({ message: 'Logged out successfully' });
   } catch (error) {
     console.error('Logout error:', error);
     res.status(500).json({ error: 'Logout failed' });

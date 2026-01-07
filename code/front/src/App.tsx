@@ -13,6 +13,7 @@ import { SettingsPage } from "./components/SettingsPage"
 import { UsersPage } from "./components/UsersPage"
 import { DocumentationPage } from "./components/DocumentationPage"
 import svgPaths from "./imports/svg-734m2ckqag"
+import { fetchWithAuth } from "./lib/fetchWithAuth"
 
 interface Room {
   id: string
@@ -35,8 +36,6 @@ interface ApiRoom {
   currentHumidity?: number
   lastUpdate?: string
 }
-
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "")
 
 const generateChartData = (trend: "up" | "down") => {
   const data: number[] = []
@@ -164,12 +163,8 @@ export default function App({ onLogout }: AppProps) {
     const action = isCurrentlySubscribed ? 'DELETE' : 'POST'
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/subscriptions/rooms/${roomId}`, {
+      const response = await fetchWithAuth(`/api/subscriptions/rooms/${roomId}`, {
         method: action,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
       })
 
       if (!response.ok) {
@@ -207,12 +202,8 @@ export default function App({ onLogout }: AppProps) {
 
   const handleUpdateRoom = async (roomId: string, updates: { name: string; description: string }) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/rooms/${roomId}`, {
+      const response = await fetchWithAuth(`/api/rooms/${roomId}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
         body: JSON.stringify(updates),
       })
 
@@ -257,12 +248,8 @@ export default function App({ onLogout }: AppProps) {
 
   const handleDeleteRoom = async (roomId: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/rooms/${roomId}`, {
+      const response = await fetchWithAuth(`/api/rooms/${roomId}`, {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
       })
 
       if (!response.ok) {
@@ -310,7 +297,7 @@ export default function App({ onLogout }: AppProps) {
   const fetchRooms = async () => {
     try {
       setIsRefreshing(true)
-      const response = await fetch(`${API_BASE_URL}/api/rooms`)
+      const response = await fetchWithAuth('/api/rooms')
       if (!response.ok) {
         throw new Error(`API responded with status ${response.status}`)
       }
@@ -333,7 +320,7 @@ export default function App({ onLogout }: AppProps) {
           let percentage = 0
 
           try {
-            const historyResponse = await fetch(`${API_BASE_URL}/api/rooms/${roomFromApi.id}/history?period=1d`)
+            const historyResponse = await fetchWithAuth(`/api/rooms/${roomFromApi.id}/history?period=1d`)
             if (historyResponse.ok) {
               const historyData = await historyResponse.json()
 
@@ -418,9 +405,7 @@ export default function App({ onLogout }: AppProps) {
   // Fonction pour récupérer les abonnements
   const fetchSubscriptions = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/subscriptions/me`, {
-        credentials: 'include',
-      })
+      const response = await fetchWithAuth('/api/subscriptions/me')
 
       if (!response.ok) {
         throw new Error(`Erreur ${response.status}`)
@@ -438,9 +423,7 @@ export default function App({ onLogout }: AppProps) {
   // Fonction pour récupérer les infos de l'utilisateur connecté
   const fetchUserInfo = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
-        credentials: 'include',
-      })
+      const response = await fetchWithAuth('/api/auth/me')
 
       if (response.ok) {
         const data = await response.json()
