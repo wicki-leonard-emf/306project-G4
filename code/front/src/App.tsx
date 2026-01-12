@@ -487,7 +487,7 @@ export default function App({ onLogout }: AppProps) {
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen bg-background text-foreground">
+      <div className="flex h-screen bg-background text-foreground w-full">
         <Sidebar currentPage={currentPage} onPageChange={setCurrentPage} onLogout={onLogout} userRole={userRole} userEmail={userEmail} />
 
         <div className="flex-1 overflow-auto">
