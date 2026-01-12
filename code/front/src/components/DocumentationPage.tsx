@@ -206,6 +206,17 @@ export function DocumentationPage() {
   -H "Content-Type: application/json" \\
   -H "X-API-Key: <RPI_API_KEY>" \\
   -d '{ "serialNumber": "PHIDGET-123", "value": 22.4 }'`}</pre>
+                <div className="mt-3 text-sm text-[#717680] mb-1">Réponse attendue (201 Created)</div>
+                <pre className="rounded-lg bg-[#0B0F1A] text-[#E6E9F2] p-3 overflow-auto">{`HTTP/1.1 201 Created
+Content-Type: application/json
+
+{
+  "success": true,
+  "reading": {
+    "id": "reading_123456789",
+    "timestamp": "2026-01-12T10:30:00.000Z"
+  }
+}`}</pre>
               </div>
             </div>
           </div>
