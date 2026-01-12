@@ -356,6 +356,28 @@ Résumé du modèle relationnel :
 - `sensor_readings` : id, sensorId, value, timestamp.
 - `room_subscriptions` : id, userId, roomId (unique user-room).
 
+## Gestion des seuils et système d'abonnement
+
+### Seuils (centralisés par room)
+
+**Les seuils sont communs à tous les utilisateurs** et gérés au niveau de la salle, pas individuellement.
+
+Stockés dans l'entité `rooms` :
+- `minTemp`, `maxTemp` : limites température
+- `minHumidity`, `maxHumidity` : limites humidité
+- `alertDelay` : délai minimum entre alertes (anti-spam)
+
+**Gestion :** Seul l'**Admin** peut modifier. À chaque lecture capteur, le backend compare la valeur aux seuils et déclenche une alerte email (via Resend) si dépassement, envoyée aux utilisateurs **abonnés** à cette salle.
+
+### Abonnements (RoomSubscription)
+
+**Un utilisateur ne reçoit des alertes que s'il s'est abonné** à la salle.
+
+**Fonctionnement :**
+- Bouton S'abonner/Se désabonner sur chaque salle
+- Stocké dans `room_subscriptions` (relation N-N users ↔ rooms)
+- Admin peut voir qui est abonné, mais ne peut pas forcer
+
 ## Diagrammes de classes
 
 Les diagrammes de classes sont disponibles dans `documentation/5_Modele_Analyses_UML.qea` et reflètent les entités Prisma et les contrôleurs Express.
