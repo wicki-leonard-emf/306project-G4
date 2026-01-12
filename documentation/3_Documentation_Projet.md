@@ -249,6 +249,91 @@ Les maquettes fonctionnelles sont incarnées par les composants React dans `code
 
 # Concept
 
+## Justifications des choix technologiques
+
+### Vercel (hébergement frontend & backend serverless)
+
+**Choix :** Vercel pour déployer le frontend React (Vite) ET le backend Express.js serverless
+
+**Avantages :**
+
+- **Déploiement unifié** : git push automatise le déploiement des deux couches simultanément
+- **CDN global** : distribution du contenu statique proche des utilisateurs
+- **Serverless backend** : scaling automatique sans gestion serveur, fonctions AWS Lambda
+- **Intégration Github actions** : déploiement automatique à chaque push sur la branche
+- **Environnements de preview** : tester les branches avant production (frontend + API) grace a des déploiements isolés
+- **Analytics et monitoring** : insights sur les performances, uptime et logs des fonctions
+- **Gratuité prototype** : plan gratuit couvre les besoins initiaux de déploiement
+
+**Inconvénients :**
+
+- **Limites serverless** : inadapté pour processus longs, risque de timeout sur requêtes lentes
+- **Moins de contrôle** : configuration d'infrastructure réduite vs serveur dédié
+- **Cold start** : première requête après inactivité plus lente (latence ajoutée)
+- **Connexion BD** : chaque requête serverless établit nouvelle connexion Neon
+
+### Neon (base de données PostgreSQL)
+
+**Choix :** Neon comme service PostgreSQL managed
+
+**Avantages :**
+
+- **Serverless PostgreSQL** : pas de gestion de serveur, scaling automatique
+- **Gratuit pour prototype** : setup immédiat, pas de facturation complexe
+- **Fiabilité** : backups automatiques, haute disponibilité incluse
+- **Branches de données** : capability de créer des copies pour dev/test/production
+- **Performance** : infrastructure optimisée pour PostgreSQL
+- **Intégration Prisma** : compatible out-of-the-box, connexion directe
+
+**Inconvénients :**
+
+- **Limitations gratuites** : quotas sur stockage et connexions simultanées
+- **Dépendance cloud** : données hébergées chez tiers
+- **Sécurité données** : vérification chiffrement au repos nécessaire pour données sensibles
+- **Migration ultérieure** : difficile de migrer vers instance PostgreSQL privée si besoin de plus de contrôle
+
+### Prisma (ORM pour Node.js/TypeScript)
+
+**Choix :** Prisma comme ORM (Object-Relational Mapping)
+
+**Avantages :**
+
+- **Schéma déclaratif** : définir la BD une seule fois dans `schema.prisma`
+- **Type-safe** : génération automatique de types TypeScript pour queries
+- **Migrations versionnées** : `prisma migrate` crée tables et historique
+- **API intuitive** : queries lisibles, pas d'écriture SQL brute
+- **Gestion des relations** : simplification des jointures 1-N et N-N
+- **Prisma Studio** : GUI pour visualiser et modifier les données en dev
+
+**Inconvénients :**
+
+- **Overhead** : génération de code supplémentaire, requêtes parfois moins optimisées
+- **Courbe d'apprentissage** : syntaxe spécifique à acquérir
+- **Performance critique** : SQL pur peut être plus efficace sur très haute charge
+
+### Node.js avec boucle persistante sur Raspberry Pi plutôt qu'un cron
+
+**Choix :** Script Node.js en Docker avec boucle `while(true)` et `sleep` au lieu d'une tâche cron Linux
+
+**Avantages d'une boucle Node.js persistante :**
+
+- **Meilleur contrôle des intervalles** : gestion précise des délais via code plutôt que configuration cron système qui est limité à la minute
+- **Gestion d'erreurs uniforme** : mécanisme retry et logging cohérent avec le backend Express
+- **Portabilité** : même code fonctionne sur n'importe quel OS disposant de Docker
+
+**Limitations d'un cron Linux :**
+
+- Configuration spécifique à l'OS, non portable entre systèmes
+- Logs dispersés, difficiles à corréler avec les autres services
+- Gestion d'erreurs primitives (sortie code, emails basiques)
+- Moins de contrôle sur les timeouts et retries
+
+**Pourquoi cette approche sur RPi :**
+
+- Cohérence : utiliser le même runtime (Node.js) pour collecte et envoi API
+- Flexibilité : adaptation facile des intervalles et logique de retry en production
+- Débogage : logs directs via Docker, pas besoin d'accéder aux logs système RPi
+
 ## Architecture du système
 
 Architecture technique :
