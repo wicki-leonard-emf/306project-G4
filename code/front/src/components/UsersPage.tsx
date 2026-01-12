@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import { toast } from "sonner"
 import { Badge } from "./ui/badge"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
@@ -19,6 +20,7 @@ import {
   DialogTitle,
 } from "./ui/dialog"
 import { Select } from "./ui/select"
+import { fetchWithAuth } from "../lib/fetchWithAuth"
 
 interface User {
   id: string
@@ -47,9 +49,12 @@ export function UsersPage() {
   const fetchUsers = async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/users')
+      const response = await fetchWithAuth('/api/users')
       if (!response.ok) {
-        throw new Error('Erreur lors du chargement des utilisateurs')
+        if (response.status === 401) throw new Error('Vous devez être connecté')
+        if (response.status === 403) throw new Error('Accès refusé (ADMIN uniquement)')
+        const data = await response.json().catch(() => null)
+        throw new Error(data?.error || 'Erreur lors du chargement des utilisateurs')
       }
       const data = await response.json()
       setUsers(data)
@@ -76,11 +81,8 @@ export function UsersPage() {
 
     setIsUpdating(true)
     try {
-      const response = await fetch(`/api/users/${editingUser.id}`, {
+      const response = await fetchWithAuth(`/api/users/${editingUser.id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({ role: newRole }),
       })
 
@@ -93,6 +95,9 @@ export function UsersPage() {
       setUsers(users.map(u => u.id === updatedUser.id ? updatedUser : u))
       setEditingUser(null)
       setError(null)
+      toast.success("Rôle mis à jour", {
+        description: `${updatedUser.email} → ${updatedUser.role}`,
+      })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Une erreur est survenue')
     } finally {
@@ -105,7 +110,7 @@ export function UsersPage() {
 
     setIsDeleting(true)
     try {
-      const response = await fetch(`/api/users/${deletingUser.id}`, {
+      const response = await fetchWithAuth(`/api/users/${deletingUser.id}`, {
         method: 'DELETE',
       })
 
@@ -117,6 +122,9 @@ export function UsersPage() {
       setUsers(users.filter(u => u.id !== deletingUser.id))
       setDeletingUser(null)
       setError(null)
+      toast.success("Utilisateur supprimé", {
+        description: deletingUser.email,
+      })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Une erreur est survenue')
     } finally {
@@ -129,11 +137,8 @@ export function UsersPage() {
 
     setIsUpdating(true)
     try {
-      const response = await fetch('/api/users', {
+      const response = await fetchWithAuth('/api/users', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({ email: newUserEmail, role: newUserRole }),
       })
 
@@ -142,12 +147,22 @@ export function UsersPage() {
         throw new Error(data.error || 'Erreur lors de la création')
       }
 
-      const newUser = await response.json()
+      const result = await response.json()
+      const newUser = result.user ?? result
       setUsers([...users, newUser])
       setIsCreatingUser(false)
       setNewUserEmail("")
       setNewUserRole("ELEVE")
       setError(null)
+      if (result.temporaryPassword) {
+        toast.success("Utilisateur créé", {
+          description: `Mot de passe temporaire: ${result.temporaryPassword}`,
+        })
+      } else {
+        toast.success("Utilisateur créé", {
+          description: newUser.email,
+        })
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Une erreur est survenue')
     } finally {

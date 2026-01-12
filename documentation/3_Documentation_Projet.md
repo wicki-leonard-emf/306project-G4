@@ -32,7 +32,7 @@ Nom des candidats : Leonard Wiki, Gabriel Beer, Cyril Dubusc
    4.5 [Diagrammes de séquence des interactions](#diagrammes-de-séquence-des-interactions)  
    4.6 [Concept de tests](#concept-de-tests)
 
-5. [Réalisation](#réalisation)
+5. [Réalisation](#Réalisation-du-projet)
 
 6. [Tests](#tests)  
    6.1 [Procédure de test](#procédure-de-test)  
@@ -128,7 +128,7 @@ Voici les différentes tâches exigées durant la phase de conception
 - Planification détaillée des étapes de réalisation (Sprints, répartition des tâches)
 - Validation de la conception technique avant le début du développement
 
-### Réalisation
+### réalisation
 
 Voici les différentes tâches exigées durant la phase de réalisation :
 
@@ -433,7 +433,7 @@ Cette section clarifie les divergences entre le scope initial du cahier des char
 
 **Fonctionnalités core livrées :**
 
-- Tableau de bord web responsive affichant température/humidité en temps réel par salle
+- Tableau de bord web affichant température/humidité en temps réel par salle
 - Système d'alertes automatisé avec déclenchement sur seuils (Admin config, abonnement utilisateur)
 - Historique des mesures consultable
 - Interface web avec authentification par rôles (Admin, Enseignant, Élève)
@@ -466,11 +466,15 @@ Cette section clarifie les divergences entre le scope initial du cahier des char
 **Réalisé :** Illimité (stocké en BD, queryable sur n'importe quelle période)
 **Justification :** Meilleur que prévu grâce à PostgreSQL persistant.
 
+### Responsive
+
+Fonctionnalité initialement prévue, mais dont l’implémentation a été reportée à la version 4 (V4) du projet, afin de prioriser les fonctionnalités essentielles et de respecter les contraintes de temps et de ressources du planning initial.
+
 ## Out of scope (non prévu, non fait)
 
 Ces fonctionnalités étaient mentionnées comme "améliorations futures" ou explicitées comme hors scope :
 
-- **App mobile native** : Explicitement exclue du cahier des charges (web responsive suffit)
+- **App mobile native** : Explicitement exclue du cahier des charges
 - **Notifications push web** : Complexité ajoutée non prioritaire
 - **Responsive design avancé** : MVP avec design basique, amélioration future possible pour ergonomie sur tous les devices
 - **Déploiement multi-RPi automatisé** : Faisable mais nécessiterait infrastructure de provisioning
@@ -485,7 +489,7 @@ Ces fonctionnalités étaient mentionnées comme "améliorations futures" ou exp
 | Historique | 7 jours min     | Illimité                 | Meilleur              |
 | RPi        | Node.js         | Node.js Docker + boucle  | Plus portable         |
 
-# Réalisation
+# Réalisation du projet
 
 Résumé de réalisation :
 
@@ -493,6 +497,180 @@ Résumé de réalisation :
 - Seed : `code/back/prisma/seed.ts` crée une salle `C114` et deux capteurs `PHIDGET-TEMP-001`, `PHIDGET-HUM-001`.
 - Frontend : composants React et pages dans `code/front/src/`, routage géré par `AppRouter.tsx`.
 - RPi : scripts d'ingestion attendus d'envoyer `X-API-Key` et payload JSON (exemples dans Postman collection).
+
+## Backend
+
+Le développement du backend a été réalisé avec Express.js et Prisma ORM, structuré selon une architecture MVC adaptée aux API REST.
+
+**Architecture et structure :**
+
+Le backend est organisé en plusieurs couches distinctes dans `code/back/src/` :
+
+- **Routes** (`routes/`) : 7 fichiers de routes modulaires (auth, rooms, sensors, subscriptions, alerts, users)
+- **Controllers** (`controllers/`) : Logique métier pour chaque endpoint
+- **Middleware** (`middleware/`) : Authentification JWT, validation des données, gestion CORS, gestion d'erreurs centralisée
+- **Models** (`models/`) : Abstraction Prisma pour accès base de données
+- **Services** (`lib/`) : Services transverses (emailService pour Resend, generateId pour short IDs)
+
+**Base de données et migrations :**
+
+Configuration Prisma avec PostgreSQL (Neon) :
+
+- Schéma déclaratif dans `prisma/schema.prisma` définissant 5 entités principales
+- 4 migrations appliquées (init, user model, room thresholds/subscriptions, short IDs, alerts)
+- Script seed (`seed.ts`) créant données de test (salle C114, 2 capteurs, utilisateurs de test)
+
+**Endpoints clés implémentés :**
+
+- **Authentification** : Register/Login avec hashage bcrypt, sessions cookies, middleware de vérification rôle
+- **Rooms** : CRUD complet, configuration seuils, consultation historique avec agrégation temporelle
+- **Sensors** : Gestion capteurs, ingestion batch avec validation (X-API-Key obligatoire)
+- **Subscriptions** : Abonnement/désabonnement utilisateur aux alertes par salle
+- **Alerts** : Déclenchement automatique à l'ingestion si seuil dépassé, envoi email via Resend aux abonnés
+
+**Sécurité et validation :**
+
+- Middleware de validation Joi pour les payloads entrants
+- Protection CSRF et limitation rate-limiting sur endpoints sensibles
+- Gestion centralisée des erreurs avec codes HTTP appropriés
+- Variables d'environnement pour secrets (DATABASE_URL, JWT_SECRET, RESEND_API_KEY)
+
+**Tests et documentation :**
+
+- Collection Postman complète (`code/back/documentation/Postman_Collection.json`) avec 20+ requêtes de test
+- Documentation API détaillée dans `code/back/documentation/API_DOCUMENTATION.md`
+- Script `test-endpoints.js` pour validation rapide des routes principales
+
+## Frontend
+
+Le frontend a été développé avec React (Vite) et TypeScript, offrant une interface web responsive pour la consultation et la gestion du système de monitoring.
+
+**Architecture et technologies :**
+
+Application React moderne organisée dans `code/front/src/` :
+
+- **Framework** : React 18 avec Vite pour build optimisé
+- **Routing** : React Router v6 via `AppRouter.tsx` avec routes protégées (`ProtectedRoute.tsx`)
+- **UI Components** : Radix UI (primitives accessibles) + Tailwind CSS pour styling
+- **Graphiques** : Recharts pour visualisation des données historiques
+- **State Management** : React hooks (useState, useEffect, useContext)
+- **HTTP Client** : Services API centralisés dans `services/`
+
+**Composants principaux réalisés :**
+
+- **Authentication** :
+
+  - `Login.tsx` : Formulaire de connexion avec validation
+  - `Register.tsx` : Inscription nouveaux utilisateurs
+  - Gestion sessions via cookies, redirection automatique si non authentifié
+
+- **Dashboard** :
+
+  - `RoomCard.tsx` : Carte affichant température/humidité actuelle par salle avec indicateurs visuels de seuils
+  - Grille responsive adaptative (desktop/tablet/mobile)
+  - Indicateurs colorés (vert/orange/rouge) selon dépassement seuils
+
+- **Détail salle** :
+
+  - `RoomDetailPage.tsx` : Page dédiée par salle avec graphiques historiques
+  - Sélecteur période (24h, 7j, 30j, custom)
+  - Graphiques temps réel (température et humidité) avec Recharts
+  - Bouton abonnement/désabonnement aux alertes
+
+- **Configuration** :
+
+  - `RoomThresholdModal.tsx` : Modal de configuration seuils (Admin uniquement)
+  - Validation ranges (min < max) côté client
+  - Sauvegarde temps réel avec feedback utilisateur
+
+- **Notifications** :
+
+  - `NotificationsPage.tsx` : Historique des alertes reçues
+  - Filtrage par salle et période
+
+- **Modals supplémentaires** :
+  - `AddRoomModal.tsx` : Création nouvelle salle (Admin)
+  - `EditRoomModal.tsx` : Modification infos salle (Admin)
+
+**Fonctionnalités UX/UI :**
+
+- Design responsive mobile-first (Tailwind breakpoints)
+- Thème cohérent avec palette couleurs EMF
+- Feedback visuel (loading states, toasts success/error)
+- Accessibilité (ARIA labels, navigation clavier)
+- Refresh automatique des données (polling toutes les 30s sur dashboard)
+
+**Déploiement :**
+
+- Build optimisé via Vite (code splitting, tree-shaking)
+- Déploiement Vercel avec CDN global
+- Variables d'environnement pour URL API (`VITE_API_URL`)
+- Configuration `vercel.json` pour routing SPA
+
+## RPi
+
+Le module Raspberry Pi constitue la couche edge du système, responsable de la collecte des données capteurs et de leur transmission vers le backend.
+
+**Configuration matérielle :**
+
+- **Raspberry Pi** avec Ubuntu server
+- **Phidget VINT Hub** pour connexion capteurs
+- **Capteurs Phidget HUM1000_0** :
+  - 1 capteur HUM1000_0 qui peut:
+    - mesurer la température (PHIDGET-TEMP-001)
+    - mesurer l'humidité (PHIDGET-HUM-001)
+- Connexion réseau internet "7Links"
+
+**Architecture logicielle :**
+
+Script Node.js conteneurisé avec Docker :
+
+- **Fichier principal** : `code/rpi/getDataPhidget.js`
+- **Environnement** : Node.js 18 LTS
+- **Containerisation** : Docker + Docker Compose pour isolation et portabilité
+- **Configuration** : Variables d'environnement dans `.env` (API_URL, API_KEY, ROOM_ID, INTERVAL)
+
+**Implémentation de la collecte :**
+
+**Boucle persistante** (choix justifié dans section Concept) :
+
+```javascript
+setInterval(readSensors, READ_INTERVAL);
+
+// Fonction readSensors() :
+  1. Lecture capteurs Phidget via SDK
+  2. Construction payload JSON
+  3. POST vers /api/sensors/readings (header X-API-Key)
+```
+
+**Déploiement et automatisation :**
+
+- **Docker Compose** : Orchestration du conteneur avec restart policy (always)
+- **Script d'installation** : `install.sh` automatise setup initial RPi
+- **Démarrage automatique** : Service systemd ou Docker autostart au boot RPi
+- **Documentation** : Guide complet dans `code/rpi/INSTALL_RASPBERRY.md` et `code/rpi/docRPI.md`
+
+**Sécurité :**
+
+- **API Key** stockée en variable d'environnement (jamais hardcodée)
+- **Connexion HTTPS** vers API backend (TLS/SSL)
+- **Isolation Docker** : Limitation accès filesystem et réseau
+
+**Monitoring et maintenance :**
+
+- Logs accessibles via `docker logs` pour diagnostic
+- Métriques de santé : timestamp dernière lecture, taux erreurs
+
+**install.sh**
+
+- Met à jour le système du Raspberry Pi
+- Installe et configure les pilotes Phidgets
+- Active le serveur réseau Phidget
+- Installe Docker et Docker Compose
+- Configure une salle et des capteurs via une API distante
+- Génère les fichiers de configuration (.env et docker-compose.yml)
+- Déploie l’application de collecte de données dans un conteneur Docker
+- Configure le démarrage automatique de l’application au redémarrage du Raspberry Pi
 
 # Tests
 

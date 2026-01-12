@@ -1,4 +1,6 @@
 import { useState } from "react"
+import { toast } from "sonner"
+import { fetchWithAuth } from "../lib/fetchWithAuth"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "./ui/alert-dialog"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./ui/chart"
@@ -125,10 +127,48 @@ export function RoomCard({
                   <DropdownMenuSeparator />
 
                   <DropdownMenuItem
-                    onClick={(e) => {
+                    onClick={async (e) => {
                       e.stopPropagation()
-                      // TODO: Implement export functionality
-                      console.log("Export data for room:", id)
+
+                      try {
+                        toast.action?.dismiss?.()
+                        toast.loading?.("Préparation de l'export...")
+
+                        // Récupérer l'historique (1d par défaut)
+                        const resp = await fetchWithAuth(`/api/rooms/${id}/history?period=1d`)
+                        if (!resp.ok) {
+                          const err = await resp.json().catch(() => ({}))
+                          throw new Error(err.error || `Erreur ${resp.status}`)
+                        }
+
+                        const json = await resp.json()
+                        const rows: Array<string> = []
+                        // Header
+                        rows.push(["timestamp", "temperature", "humidity"].join(","))
+
+                        for (const r of json.data || []) {
+                          const ts = new Date(r.timestamp).toISOString()
+                          const temp = r.temperature !== null && r.temperature !== undefined ? r.temperature : ""
+                          const hum = r.humidity !== null && r.humidity !== undefined ? r.humidity : ""
+                          rows.push([ts, temp, hum].join(","))
+                        }
+
+                        const csv = rows.join("\n")
+                        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" })
+                        const url = URL.createObjectURL(blob)
+                        const a = document.createElement("a")
+                        a.href = url
+                        a.download = `${room.replace(/\s+/g, "_") || id}_history.csv`
+                        document.body.appendChild(a)
+                        a.click()
+                        a.remove()
+                        URL.revokeObjectURL(url)
+
+                        toast.success("Export téléchargé", { description: "Le fichier CSV a été généré." })
+                      } catch (error) {
+                        console.error("Export error:", error)
+                        toast.error("Erreur export", { description: error instanceof Error ? error.message : String(error) })
+                      }
                     }}
                   >
                     <Download className="h-4 w-4" />
