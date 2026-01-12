@@ -433,7 +433,7 @@ Cette section clarifie les divergences entre le scope initial du cahier des char
 
 **Fonctionnalités core livrées :**
 
-- Tableau de bord web responsive affichant température/humidité en temps réel par salle
+- Tableau de bord web affichant température/humidité en temps réel par salle
 - Système d'alertes automatisé avec déclenchement sur seuils (Admin config, abonnement utilisateur)
 - Historique des mesures consultable
 - Interface web avec authentification par rôles (Admin, Enseignant, Élève)
@@ -466,11 +466,15 @@ Cette section clarifie les divergences entre le scope initial du cahier des char
 **Réalisé :** Illimité (stocké en BD, queryable sur n'importe quelle période)
 **Justification :** Meilleur que prévu grâce à PostgreSQL persistant.
 
+### Responsive
+
+Fonctionnalité initialement prévue, mais dont l’implémentation a été reportée à la version 4 (V4) du projet, afin de prioriser les fonctionnalités essentielles et de respecter les contraintes de temps et de ressources du planning initial.
+
 ## Out of scope (non prévu, non fait)
 
 Ces fonctionnalités étaient mentionnées comme "améliorations futures" ou explicitées comme hors scope :
 
-- **App mobile native** : Explicitement exclue du cahier des charges (web responsive suffit)
+- **App mobile native** : Explicitement exclue du cahier des charges
 - **Notifications push web** : Complexité ajoutée non prioritaire
 - **Responsive design avancé** : MVP avec design basique, amélioration future possible pour ergonomie sur tous les devices
 - **Déploiement multi-RPi automatisé** : Faisable mais nécessiterait infrastructure de provisioning
@@ -635,10 +639,8 @@ setInterval(readSensors, READ_INTERVAL);
 
 // Fonction readSensors() :
   1. Lecture capteurs Phidget via SDK
-  2. Validation des valeurs (plages acceptables)
-  3. Construction payload JSON
-  4. POST vers /api/sensors/readings (header X-API-Key)
-  5. Gestion erreurs et retry logic (3 tentatives)
+  2. Construction payload JSON
+  3. POST vers /api/sensors/readings (header X-API-Key)
 ```
 
 **Déploiement et automatisation :**
@@ -658,6 +660,17 @@ setInterval(readSensors, READ_INTERVAL);
 
 - Logs accessibles via `docker logs` pour diagnostic
 - Métriques de santé : timestamp dernière lecture, taux erreurs
+
+**install.sh**
+
+- Met à jour le système du Raspberry Pi
+- Installe et configure les pilotes Phidgets
+- Active le serveur réseau Phidget
+- Installe Docker et Docker Compose
+- Configure une salle et des capteurs via une API distante
+- Génère les fichiers de configuration (.env et docker-compose.yml)
+- Déploie l’application de collecte de données dans un conteneur Docker
+- Configure le démarrage automatique de l’application au redémarrage du Raspberry Pi
 
 # Tests
 
