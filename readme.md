@@ -55,8 +55,8 @@ Documentation complète du projet :
 
 Le projet SensorHub est réalisé par un groupe de **3 apprenants informaticiens CFC** :
 
-- **Beer Gabriel** — Product Owner / Développement frontend / Tests UI
-- **Wicki Léonard** — Développement backend / Base de données
+- **Beer Gabriel** — Product Owner / Développement backend / Base de données 
+- **Wicki Léonard** — Scrum Master / Développement frontend / Tests UI
 - **Dubusc Cyril** — Intégration Raspberry Pi / Scripts capteurs
 
 ---
@@ -182,9 +182,9 @@ git push origin S1
 
 Pour toute question concernant le projet SensorHub, veuillez contacter :
 
-- **Beer Gabriel** : [email]
-- **Wicki Léonard** : [email]
-- **Dubusc Cyril** : [email]
+- **Beer Gabriel** : gabriel.beer@studentfr.ch
+- **Wicki Léonard** : leonard.wicki@studentfr.ch
+- **Dubusc Cyril** : cyril.dubusc@studentfr.ch
 
 Ou le formateur responsable du module 306.
 
