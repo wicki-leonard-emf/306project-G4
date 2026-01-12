@@ -32,7 +32,7 @@ Nom des candidats : Leonard Wiki, Gabriel Beer, Cyril Dubusc
    4.5 [Diagrammes de séquence des interactions](#diagrammes-de-séquence-des-interactions)  
    4.6 [Concept de tests](#concept-de-tests)
 
-5. [Réalisation](#réalisation)
+5. [Réalisation](#Réalisation)
 
 6. [Tests](#tests)  
    6.1 [Procédure de test](#procédure-de-test)  
@@ -85,7 +85,7 @@ Le système sensorHub doit permettre :
 - **Stockage centralisé** : Toutes les lectures sont stockées dans une base de données PostgreSQL avec timestamps et métadonnées
 - **Consultation en temps réel** : Un tableau de bord web affiche les conditions actuelles de chaque salle avec visualisation des trends
 - **Gestion des seuils** : Les administrateurs peuvent définir des seuils d'alerte pour chaque salle
-- **Interface utilisateur** : Application React responsive pour desktop et mobile avec authentification par rôles (Admin, Enseignant, Élève)
+- **Interface utilisateur** : Application React responsive, accessible sur ordinateur, tablette et smartphone, avec un système d’authentification par rôles (Administrateur, Enseignant, Élève).
 - **API REST** : Backend Express.js exposant les endpoints pour consultation et gestion des données
 
 ### Architecture souhaitée
@@ -128,11 +128,11 @@ Voici les différentes tâches exigées durant la phase de conception
 - Planification détaillée des étapes de réalisation (Sprints, répartition des tâches)
 - Validation de la conception technique avant le début du développement
 
-### Réalisation
+### réalisation
 
 Voici les différentes tâches exigées durant la phase de réalisation :
 
-- Installation physique et connexion des capteurs de température et d’humidité Phidget sur le Hub/RPi
+- Installation physique et connexion des capteurs d’humidité Phidget sur le Hub/RPi
 - Configuration du Raspberry Pi (OS, Node.js) pour l'exécution automatique des scripts
 - Développement du script de collecte : lecture périodique des capteurs et envoi à l'API
 - Mise en place du Backend v1 : Création du projet Express, configuration Prisma et connexion Neon
@@ -157,6 +157,28 @@ L'équipe utilise une méthode agile légère adaptée à la taille du groupe af
 - **Validation** : revues des livrables et validation par le supérieur professionnel avant les jalons clés.
 
 Cette organisation facilite la répartition du travail, la traçabilité des actions et la réactivité en cas d'incident.
+
+### Definition of Done (DoD)
+
+Pour qu'une tâche soit considérée comme terminée, elle doit respecter les critères suivants :
+
+**Critères de validation par le Product Owner :**
+
+1. **Code fonctionnel** : Le code implémente correctement la fonctionnalité demandée et s'exécute sans erreur
+2. **Conformité avec le commit** : Les changements correspondent à ce qui est décrit dans le message de commit
+3. **Conformité avec la tâche** : Le code répond aux exigences définies dans la description de la tâche Kanban
+4. **Tests effectués** : Des tests ont été réalisés pour valider le bon fonctionnement (tests manuels et/ou automatisés)
+5. **Documentation à jour** : Les changements sont documentés (commentaires dans le code, documentation technique si nécessaire)
+6. **Revue de code** : Le Product Owner a vérifié et approuvé le code selon les standards du projet
+
+**Processus de validation :**
+
+- Le développeur soumet son code avec un commit descriptif
+- Le Product Owner examine le code selon les critères ci-dessus
+- Si validé : le code est accepté et la tâche est marquée comme terminée dans le Kanban
+- Si modifications nécessaires : retour au développeur avec commentaires détaillés
+
+Cette Definition of Done garantit la qualité du code livré et la cohérence du projet tout au long du développement.
 
 ### Participants
 
@@ -411,7 +433,7 @@ Cette section clarifie les divergences entre le scope initial du cahier des char
 
 **Fonctionnalités core livrées :**
 
-- Tableau de bord web responsive affichant température/humidité en temps réel par salle
+- Tableau de bord web affichant température/humidité en temps réel par salle
 - Système d'alertes automatisé avec déclenchement sur seuils (Admin config, abonnement utilisateur)
 - Historique des mesures consultable
 - Interface web avec authentification par rôles (Admin, Enseignant, Élève)
@@ -444,11 +466,15 @@ Cette section clarifie les divergences entre le scope initial du cahier des char
 **Réalisé :** Illimité (stocké en BD, queryable sur n'importe quelle période)
 **Justification :** Meilleur que prévu grâce à PostgreSQL persistant.
 
+### Responsive
+
+Fonctionnalité initialement prévue, mais dont l’implémentation a été reportée à la version 4 (V4) du projet, afin de prioriser les fonctionnalités essentielles et de respecter les contraintes de temps et de ressources du planning initial.
+
 ## Out of scope (non prévu, non fait)
 
 Ces fonctionnalités étaient mentionnées comme "améliorations futures" ou explicitées comme hors scope :
 
-- **App mobile native** : Explicitement exclue du cahier des charges (web responsive suffit)
+- **App mobile native** : Explicitement exclue du cahier des charges
 - **Notifications push web** : Complexité ajoutée non prioritaire
 - **Responsive design avancé** : MVP avec design basique, amélioration future possible pour ergonomie sur tous les devices
 - **Déploiement multi-RPi automatisé** : Faisable mais nécessiterait infrastructure de provisioning
@@ -472,6 +498,180 @@ Résumé de réalisation :
 - Frontend : composants React et pages dans `code/front/src/`, routage géré par `AppRouter.tsx`.
 - RPi : scripts d'ingestion attendus d'envoyer `X-API-Key` et payload JSON (exemples dans Postman collection).
 
+## Backend
+
+Le développement du backend a été réalisé avec Express.js et Prisma ORM, structuré selon une architecture MVC adaptée aux API REST.
+
+**Architecture et structure :**
+
+Le backend est organisé en plusieurs couches distinctes dans `code/back/src/` :
+
+- **Routes** (`routes/`) : 7 fichiers de routes modulaires (auth, rooms, sensors, subscriptions, alerts, users)
+- **Controllers** (`controllers/`) : Logique métier pour chaque endpoint
+- **Middleware** (`middleware/`) : Authentification JWT, validation des données, gestion CORS, gestion d'erreurs centralisée
+- **Models** (`models/`) : Abstraction Prisma pour accès base de données
+- **Services** (`lib/`) : Services transverses (emailService pour Resend, generateId pour short IDs)
+
+**Base de données et migrations :**
+
+Configuration Prisma avec PostgreSQL (Neon) :
+
+- Schéma déclaratif dans `prisma/schema.prisma` définissant 5 entités principales
+- 4 migrations appliquées (init, user model, room thresholds/subscriptions, short IDs, alerts)
+- Script seed (`seed.ts`) créant données de test (salle C114, 2 capteurs, utilisateurs de test)
+
+**Endpoints clés implémentés :**
+
+- **Authentification** : Register/Login avec hashage bcrypt, sessions cookies, middleware de vérification rôle
+- **Rooms** : CRUD complet, configuration seuils, consultation historique avec agrégation temporelle
+- **Sensors** : Gestion capteurs, ingestion batch avec validation (X-API-Key obligatoire)
+- **Subscriptions** : Abonnement/désabonnement utilisateur aux alertes par salle
+- **Alerts** : Déclenchement automatique à l'ingestion si seuil dépassé, envoi email via Resend aux abonnés
+
+**Sécurité et validation :**
+
+- Middleware de validation Joi pour les payloads entrants
+- Protection CSRF et limitation rate-limiting sur endpoints sensibles
+- Gestion centralisée des erreurs avec codes HTTP appropriés
+- Variables d'environnement pour secrets (DATABASE_URL, JWT_SECRET, RESEND_API_KEY)
+
+**Tests et documentation :**
+
+- Collection Postman complète (`code/back/documentation/Postman_Collection.json`) avec 20+ requêtes de test
+- Documentation API détaillée dans `code/back/documentation/API_DOCUMENTATION.md`
+- Script `test-endpoints.js` pour validation rapide des routes principales
+
+## Frontend
+
+Le frontend a été développé avec React (Vite) et TypeScript, offrant une interface web responsive pour la consultation et la gestion du système de monitoring.
+
+**Architecture et technologies :**
+
+Application React moderne organisée dans `code/front/src/` :
+
+- **Framework** : React 18 avec Vite pour build optimisé
+- **Routing** : React Router v6 via `AppRouter.tsx` avec routes protégées (`ProtectedRoute.tsx`)
+- **UI Components** : Radix UI (primitives accessibles) + Tailwind CSS pour styling
+- **Graphiques** : Recharts pour visualisation des données historiques
+- **State Management** : React hooks (useState, useEffect, useContext)
+- **HTTP Client** : Services API centralisés dans `services/`
+
+**Composants principaux réalisés :**
+
+- **Authentication** :
+
+  - `Login.tsx` : Formulaire de connexion avec validation
+  - `Register.tsx` : Inscription nouveaux utilisateurs
+  - Gestion sessions via cookies, redirection automatique si non authentifié
+
+- **Dashboard** :
+
+  - `RoomCard.tsx` : Carte affichant température/humidité actuelle par salle avec indicateurs visuels de seuils
+  - Grille responsive adaptative (desktop/tablet/mobile)
+  - Indicateurs colorés (vert/orange/rouge) selon dépassement seuils
+
+- **Détail salle** :
+
+  - `RoomDetailPage.tsx` : Page dédiée par salle avec graphiques historiques
+  - Sélecteur période (24h, 7j, 30j, custom)
+  - Graphiques temps réel (température et humidité) avec Recharts
+  - Bouton abonnement/désabonnement aux alertes
+
+- **Configuration** :
+
+  - `RoomThresholdModal.tsx` : Modal de configuration seuils (Admin uniquement)
+  - Validation ranges (min < max) côté client
+  - Sauvegarde temps réel avec feedback utilisateur
+
+- **Notifications** :
+
+  - `NotificationsPage.tsx` : Historique des alertes reçues
+  - Filtrage par salle et période
+
+- **Modals supplémentaires** :
+  - `AddRoomModal.tsx` : Création nouvelle salle (Admin)
+  - `EditRoomModal.tsx` : Modification infos salle (Admin)
+
+**Fonctionnalités UX/UI :**
+
+- Design responsive mobile-first (Tailwind breakpoints)
+- Thème cohérent avec palette couleurs EMF
+- Feedback visuel (loading states, toasts success/error)
+- Accessibilité (ARIA labels, navigation clavier)
+- Refresh automatique des données (polling toutes les 30s sur dashboard)
+
+**Déploiement :**
+
+- Build optimisé via Vite (code splitting, tree-shaking)
+- Déploiement Vercel avec CDN global
+- Variables d'environnement pour URL API (`VITE_API_URL`)
+- Configuration `vercel.json` pour routing SPA
+
+## RPi
+
+Le module Raspberry Pi constitue la couche edge du système, responsable de la collecte des données capteurs et de leur transmission vers le backend.
+
+**Configuration matérielle :**
+
+- **Raspberry Pi** avec Ubuntu server
+- **Phidget VINT Hub** pour connexion capteurs
+- **Capteurs Phidget HUM1000_0** :
+  - 1 capteur HUM1000_0 qui peut:
+    - mesurer la température (PHIDGET-TEMP-001)
+    - mesurer l'humidité (PHIDGET-HUM-001)
+- Connexion réseau internet "7Links"
+
+**Architecture logicielle :**
+
+Script Node.js conteneurisé avec Docker :
+
+- **Fichier principal** : `code/rpi/getDataPhidget.js`
+- **Environnement** : Node.js 18 LTS
+- **Containerisation** : Docker + Docker Compose pour isolation et portabilité
+- **Configuration** : Variables d'environnement dans `.env` (API_URL, API_KEY, ROOM_ID, INTERVAL)
+
+**Implémentation de la collecte :**
+
+**Boucle persistante** (choix justifié dans section Concept) :
+
+```javascript
+setInterval(readSensors, READ_INTERVAL);
+
+// Fonction readSensors() :
+  1. Lecture capteurs Phidget via SDK
+  2. Construction payload JSON
+  3. POST vers /api/sensors/readings (header X-API-Key)
+```
+
+**Déploiement et automatisation :**
+
+- **Docker Compose** : Orchestration du conteneur avec restart policy (always)
+- **Script d'installation** : `install.sh` automatise setup initial RPi
+- **Démarrage automatique** : Service systemd ou Docker autostart au boot RPi
+- **Documentation** : Guide complet dans `code/rpi/INSTALL_RASPBERRY.md` et `code/rpi/docRPI.md`
+
+**Sécurité :**
+
+- **API Key** stockée en variable d'environnement (jamais hardcodée)
+- **Connexion HTTPS** vers API backend (TLS/SSL)
+- **Isolation Docker** : Limitation accès filesystem et réseau
+
+**Monitoring et maintenance :**
+
+- Logs accessibles via `docker logs` pour diagnostic
+- Métriques de santé : timestamp dernière lecture, taux erreurs
+
+**install.sh**
+
+- Met à jour le système du Raspberry Pi
+- Installe et configure les pilotes Phidgets
+- Active le serveur réseau Phidget
+- Installe Docker et Docker Compose
+- Configure une salle et des capteurs via une API distante
+- Génère les fichiers de configuration (.env et docker-compose.yml)
+- Déploie l’application de collecte de données dans un conteneur Docker
+- Configure le démarrage automatique de l’application au redémarrage du Raspberry Pi
+
 # Tests
 
 ## Procédure de test
@@ -486,15 +686,13 @@ Procédure recommandée :
 
 ## Protocole de tests
 
-## Protocole de tests
-
 | Numéro de test | Date | Description                    | Résultat désiré                                                | Résultat obtenu |
 | -------------: | ---: | ------------------------------ | -------------------------------------------------------------- | --------------- |
-|             F1 | (ex) | API - Create room              | 201 Created + body contenant `room`                            |                 |
-|             F2 | (ex) | API - Get rooms                | 200 OK + liste des salles avec `currentTemp`/`currentHumidity` |                 |
-|             F3 | (ex) | API - Ingest batch readings    | 201 Created, résumé `created`/`failed`                         |                 |
-|             F4 | (ex) | API - Missing API key          | 401 Unauthorized                                               |                 |
-|             F5 | (ex) | Frontend - Dashboard rendering | Affiche les `RoomCard` et indicateurs de seuils                |                 |
+|             F1 | (ex) | API - Create room              | 201 Created + body contenant `room`                            | OK              |
+|             F2 | (ex) | API - Get rooms                | 200 OK + liste des salles avec `currentTemp`/`currentHumidity` | OK              |
+|             F3 | (ex) | API - Ingest batch readings    | 201 Created, résumé `created`/`failed`                         | OK              |
+|             F4 | (ex) | API - Missing API key          | 401 Unauthorized                                               | OK              |
+|             F5 | (ex) | Frontend - Dashboard rendering | Affiche les `RoomCard` et indicateurs de seuils                | OK              |
 
 # Conclusion
 
@@ -511,7 +709,7 @@ Procédure recommandée :
 
 ## Conclusion du module de Gabriel
 
-_(à compléter par Gabriel)_
+Le module 306 m'a permis de découvrir le rôle de Product Owner et d'approfondir ma compréhension de la méthodologie agile. En tant que PO, j'ai appris à définir et valider les critères d'acceptation (Definition of Done), à prioriser les tâches dans le Kanban et à assurer la revue de code de l'équipe. Cette expérience m'a fait réaliser l'importance de la coordination entre les différents acteurs du projet et de la validation continue des livrables. La gestion du backlog, la planification des sprints et l'adaptation aux imprévus m'ont donné une vision globale de la gestion de projet au-delà du simple développement technique.
 
 ## Conclusion du module de Léonard
 
@@ -519,7 +717,11 @@ Le module 306 n'a pas représenté un défi technique majeur pour moi, car les c
 
 ## Conclusion du module de Cyril
 
-_(à compléter par Cyril)_
+Durant le module 306, j’ai pu approfondir et renforcer mes connaissances en gestion de projet, notamment en ce qui concerne l’organisation, la planification et le suivi des tâches. Ce module m’a permis de mieux comprendre l’importance d’une bonne structure de travail afin d’assurer le bon déroulement d’un projet du début à la fin.
+
+J’ai également pu améliorer mon esprit d’équipe, ma communication et ma coordination avec les autres membres du groupe. Le travail collaboratif m’a appris à mieux répartir les tâches en fonction des compétences de chacun, à respecter les délais fixés et à assumer mes responsabilités au sein de l’équipe.
+
+Sur le plan technique, le module 306 a permis de revoir et de consolider plusieurs compétences acquises lors d’autres modules. Cette remise à niveau a été bénéfique, car elle m’a aidé à rafraîchir mes connaissances et à mieux les appliquer dans un contexte de projet concret. Dans l’ensemble, ce module m’a apporté une meilleure vision du travail en équipe et de la gestion de projet, des compétences essentielles pour ma formation et mon futur professionnel.
 
 # Bibliographie : liste des sources et références
 
