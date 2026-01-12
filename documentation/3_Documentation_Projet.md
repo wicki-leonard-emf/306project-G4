@@ -85,7 +85,7 @@ Le système sensorHub doit permettre :
 - **Stockage centralisé** : Toutes les lectures sont stockées dans une base de données PostgreSQL avec timestamps et métadonnées
 - **Consultation en temps réel** : Un tableau de bord web affiche les conditions actuelles de chaque salle avec visualisation des trends
 - **Gestion des seuils** : Les administrateurs peuvent définir des seuils d'alerte pour chaque salle
-- **Interface utilisateur** : Application React avec authentification par rôles (Admin, Enseignant, Élève)
+- **Interface utilisateur** : Application React responsive, accessible sur ordinateur, tablette et smartphone, avec un système d’authentification par rôles (Administrateur, Enseignant, Élève).
 - **API REST** : Backend Express.js exposant les endpoints pour consultation et gestion des données
 
 ### Architecture souhaitée
