@@ -334,7 +334,7 @@ Content-Type: application/json
                   <nav ref={navRef} className="relative space-y-1">
                     <div
                       ref={indicatorRef}
-                      className="absolute left-0 right-0 bg-[#FAFAFA] rounded-md pointer-events-none transform transition-transform duration-500 ease-out"
+                      className="absolute left-0 right-0 bg-[#FAFAFA] rounded-md pointer-events-none transform transition-transform duration-1000 ease-out"
                       style={{ transform: 'translateY(0px)', height: 0 }}
                     />
 
@@ -347,10 +347,10 @@ Content-Type: application/json
                           type="button"
                           onClick={() => scrollTo(s.id)}
                           aria-current={isActive ? 'true' : undefined}
-                          className="relative w-full text-left text-sm rounded-md px-2 py-1 hover:bg-[#FAFAFA] transition-colors duration-200"
+                          className="relative w-full text-left text-sm rounded-md px-2 py-1 hover:bg-[#FAFAFA] transition-colors duration-500"
                         >
                           <span
-                            className={`inline-block align-middle transition duration-300 ease-out transform ${isActive ? 'scale-105 text-[#181d27] font-semibold' : 'scale-100 text-[#535862] opacity-70'
+                            className={`inline-block align-middle transition duration-500 ease-out transform ${isActive ? 'scale-105 text-[#181d27] font-semibold' : 'scale-100 text-[#535862] opacity-70'
                               }`}
                           >
                             {s.title}

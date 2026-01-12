@@ -1,6 +1,72 @@
+import bcrypt from 'bcryptjs';
 import { PrismaClient } from '@prisma/client';
+import { generateId } from '../lib/generateId.js';
 
 const prisma = new PrismaClient();
+
+const generateTemporaryPassword = () => {
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%';
+  const length = 14;
+  let out = '';
+  for (let i = 0; i < length; i++) {
+    out += alphabet[Math.floor(Math.random() * alphabet.length)];
+  }
+  return out;
+};
+
+// Create user (admin)
+export const createUser = async (req, res) => {
+  try {
+    const { email, role } = req.body;
+
+    if (!email || typeof email !== 'string') {
+      return res.status(400).json({ error: 'Email requis' });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(normalizedEmail)) {
+      return res.status(400).json({ error: 'Format email invalide' });
+    }
+
+    const validRoles = ['ADMIN', 'ENSEIGNANT', 'ELEVE'];
+    const finalRole = role ?? 'ELEVE';
+    if (!validRoles.includes(finalRole)) {
+      return res.status(400).json({ error: 'Rôle invalide. Must be ADMIN, ENSEIGNANT, or ELEVE' });
+    }
+
+    const existingUser = await prisma.user.findUnique({
+      where: { email: normalizedEmail }
+    });
+
+    if (existingUser) {
+      return res.status(409).json({ error: 'User already exists' });
+    }
+
+    const temporaryPassword = generateTemporaryPassword();
+    const hashedPassword = await bcrypt.hash(temporaryPassword, 10);
+
+    const user = await prisma.user.create({
+      data: {
+        id: generateId(),
+        email: normalizedEmail,
+        password: hashedPassword,
+        role: finalRole
+      },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        createdAt: true
+      }
+    });
+
+    res.status(201).json({ user, temporaryPassword });
+  } catch (error) {
+    console.error('Create user error:', error);
+    res.status(500).json({ error: 'Failed to create user' });
+  }
+};
 
 // Get all users
 export const getAllUsers = async (req, res) => {
