@@ -32,7 +32,7 @@ Nom des candidats : Leonard Wiki, Gabriel Beer, Cyril Dubusc
    4.5 [Diagrammes de séquence des interactions](#diagrammes-de-séquence-des-interactions)  
    4.6 [Concept de tests](#concept-de-tests)
 
-5. [Réalisation](#Réalisation)
+5. [Réalisation](#Réalisation-du-projet)
 
 6. [Tests](#tests)  
    6.1 [Procédure de test](#procédure-de-test)  
@@ -489,7 +489,7 @@ Ces fonctionnalités étaient mentionnées comme "améliorations futures" ou exp
 | Historique | 7 jours min     | Illimité                 | Meilleur              |
 | RPi        | Node.js         | Node.js Docker + boucle  | Plus portable         |
 
-# Réalisation
+# Réalisation du projet
 
 Résumé de réalisation :
 
