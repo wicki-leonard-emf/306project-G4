@@ -401,6 +401,66 @@ Stratégie de tests :
 
 Voir la section "Tests" pour le protocole synthétique. La collection Postman contient les cas d'API essentiels (création salle, ingestion, erreurs clés API).
 
+# Gestion des écarts scope
+
+Cette section clarifie les divergences entre le scope initial du cahier des charges et la réalité du développement.
+
+## Ce qui a été fait (conforme au scope)
+
+**Fonctionnalités core livrées :**
+- Tableau de bord web responsive affichant température/humidité en temps réel par salle
+- Système d'alertes automatisé avec déclenchement sur seuils (Admin config, abonnement utilisateur)
+- Historique des mesures consultable
+- Interface web avec authentification par rôles (Admin, Enseignant, Élève)
+- API REST complète pour ingestion RPi et consultation frontend
+- Script RPi en Docker + Node.js pour collecte capteurs Phidget
+
+**Infrastructure :**
+- Déploiement Vercel (frontend + backend serverless)
+- Base PostgreSQL Neon avec Prisma ORM
+- Collection Postman pour tests API
+
+## Écarts et ajustements
+
+### Notifications email (adapté)
+
+**Initialement prévu :** "Notifications email/push" génériques
+**Réalisé :** Notifications email via **Resend** (spécifique)
+**Justification :** Resend est un service email optimisé pour applications modernes, plus fiable que de gérer SMTP brut. Les notifications push web n'ont pas été implémentées (scope réduit prototype).
+
+### Authentification (simplifié)
+
+**Initialement prévu :** "Authentification par rôles avec gestion utilisateur"
+**Réalisé :** Authentification sessions + rôles (Admin/Enseignant/Élève) sans 2FA
+**Justification :** MVP ne nécessite pas authentification multifacteur, sessions cookies suffisantes pour prototype école.
+
+### Historique (conforme)
+
+**Prévu :** Minimum 7 jours
+**Réalisé :** Illimité (stocké en BD, queryable sur n'importe quelle période)
+**Justification :** Meilleur que prévu grâce à PostgreSQL persistant.
+
+## Out of scope (non prévu, non fait)
+
+Ces fonctionnalités étaient mentionnées comme "améliorations futures" ou explicitées comme hors scope :
+
+- **App mobile native** : Explicitement exclue du cahier des charges (web responsive suffit)
+- **Notifications push web** : Complexité ajoutée non prioritaire
+- **Responsive design avancé** : MVP avec design basique, amélioration future possible pour ergonomie sur tous les devices
+- **Déploiement multi-RPi automatisé** : Faisable mais nécessiterait infrastructure de provisioning
+- **Tableau d'analyse avancée** (moyennes/percentiles) : Future phase
+
+
+## Résumé des décisions
+
+| Aspect | Scope initial | Réalisé | Impact |
+|--------|---------------|---------|--------|
+| Seuils | Config par room | Config admin centralisée | Plus simple, cohérent |
+| Alertes | Email + push | Email via Resend | Suffisant, fiable |
+| Historique | 7 jours min | Illimité | Meilleur |
+| RPi | Node.js | Node.js Docker + boucle | Plus portable |
+
+
 # Réalisation
 
 Résumé de réalisation :
