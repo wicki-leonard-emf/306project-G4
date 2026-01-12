@@ -85,7 +85,7 @@ Le système sensorHub doit permettre :
 - **Stockage centralisé** : Toutes les lectures sont stockées dans une base de données PostgreSQL avec timestamps et métadonnées
 - **Consultation en temps réel** : Un tableau de bord web affiche les conditions actuelles de chaque salle avec visualisation des trends
 - **Gestion des seuils** : Les administrateurs peuvent définir des seuils d'alerte pour chaque salle
-- **Interface utilisateur** : Application React avec authentification par rôles (Admin, Enseignant, Élève)
+- **Interface utilisateur** : Application React responsive, accessible sur ordinateur, tablette et smartphone, avec un système d’authentification par rôles (Administrateur, Enseignant, Élève).
 - **API REST** : Backend Express.js exposant les endpoints pour consultation et gestion des données
 
 ### Architecture souhaitée
@@ -539,7 +539,11 @@ Le module 306 n'a pas représenté un défi technique majeur pour moi, car les c
 
 ## Conclusion du module de Cyril
 
-_(à compléter par Cyril)_
+Durant le module 306, j’ai pu approfondir et renforcer mes connaissances en gestion de projet, notamment en ce qui concerne l’organisation, la planification et le suivi des tâches. Ce module m’a permis de mieux comprendre l’importance d’une bonne structure de travail afin d’assurer le bon déroulement d’un projet du début à la fin.
+
+J’ai également pu améliorer mon esprit d’équipe, ma communication et ma coordination avec les autres membres du groupe. Le travail collaboratif m’a appris à mieux répartir les tâches en fonction des compétences de chacun, à respecter les délais fixés et à assumer mes responsabilités au sein de l’équipe.
+
+Sur le plan technique, le module 306 a permis de revoir et de consolider plusieurs compétences acquises lors d’autres modules. Cette remise à niveau a été bénéfique, car elle m’a aidé à rafraîchir mes connaissances et à mieux les appliquer dans un contexte de projet concret. Dans l’ensemble, ce module m’a apporté une meilleure vision du travail en équipe et de la gestion de projet, des compétences essentielles pour ma formation et mon futur professionnel.
 
 # Bibliographie : liste des sources et références
 
