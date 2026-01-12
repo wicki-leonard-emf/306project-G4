@@ -85,7 +85,7 @@ Le système sensorHub doit permettre :
 - **Stockage centralisé** : Toutes les lectures sont stockées dans une base de données PostgreSQL avec timestamps et métadonnées
 - **Consultation en temps réel** : Un tableau de bord web affiche les conditions actuelles de chaque salle avec visualisation des trends
 - **Gestion des seuils** : Les administrateurs peuvent définir des seuils d'alerte pour chaque salle
-- **Interface utilisateur** : Application React responsive pour desktop et mobile avec authentification par rôles (Admin, Enseignant, Élève)
+- **Interface utilisateur** : Application React avec authentification par rôles (Admin, Enseignant, Élève)
 - **API REST** : Backend Express.js exposant les endpoints pour consultation et gestion des données
 
 ### Architecture souhaitée
@@ -132,7 +132,7 @@ Voici les différentes tâches exigées durant la phase de conception
 
 Voici les différentes tâches exigées durant la phase de réalisation :
 
-- Installation physique et connexion des capteurs de température et d’humidité Phidget sur le Hub/RPi
+- Installation physique et connexion des capteurs d’humidité Phidget sur le Hub/RPi
 - Configuration du Raspberry Pi (OS, Node.js) pour l'exécution automatique des scripts
 - Développement du script de collecte : lecture périodique des capteurs et envoi à l'API
 - Mise en place du Backend v1 : Création du projet Express, configuration Prisma et connexion Neon
@@ -512,11 +512,11 @@ Procédure recommandée :
 
 | Numéro de test | Date | Description                    | Résultat désiré                                                | Résultat obtenu |
 | -------------: | ---: | ------------------------------ | -------------------------------------------------------------- | --------------- |
-|             F1 | (ex) | API - Create room              | 201 Created + body contenant `room`                            |                 |
-|             F2 | (ex) | API - Get rooms                | 200 OK + liste des salles avec `currentTemp`/`currentHumidity` |                 |
-|             F3 | (ex) | API - Ingest batch readings    | 201 Created, résumé `created`/`failed`                         |                 |
-|             F4 | (ex) | API - Missing API key          | 401 Unauthorized                                               |                 |
-|             F5 | (ex) | Frontend - Dashboard rendering | Affiche les `RoomCard` et indicateurs de seuils                |                 |
+|             F1 | (ex) | API - Create room              | 201 Created + body contenant `room`                            | OK              |
+|             F2 | (ex) | API - Get rooms                | 200 OK + liste des salles avec `currentTemp`/`currentHumidity` | OK              |
+|             F3 | (ex) | API - Ingest batch readings    | 201 Created, résumé `created`/`failed`                         | OK              |
+|             F4 | (ex) | API - Missing API key          | 401 Unauthorized                                               | OK              |
+|             F5 | (ex) | Frontend - Dashboard rendering | Affiche les `RoomCard` et indicateurs de seuils                | OK              |
 
 # Conclusion
 
