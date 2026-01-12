@@ -158,6 +158,28 @@ L'équipe utilise une méthode agile légère adaptée à la taille du groupe af
 
 Cette organisation facilite la répartition du travail, la traçabilité des actions et la réactivité en cas d'incident.
 
+### Definition of Done (DoD)
+
+Pour qu'une tâche soit considérée comme terminée, elle doit respecter les critères suivants :
+
+**Critères de validation par le Product Owner :**
+
+1. **Code fonctionnel** : Le code implémente correctement la fonctionnalité demandée et s'exécute sans erreur
+2. **Conformité avec le commit** : Les changements correspondent à ce qui est décrit dans le message de commit
+3. **Conformité avec la tâche** : Le code répond aux exigences définies dans la description de la tâche Kanban
+4. **Tests effectués** : Des tests ont été réalisés pour valider le bon fonctionnement (tests manuels et/ou automatisés)
+5. **Documentation à jour** : Les changements sont documentés (commentaires dans le code, documentation technique si nécessaire)
+6. **Revue de code** : Le Product Owner a vérifié et approuvé le code selon les standards du projet
+
+**Processus de validation :**
+
+- Le développeur soumet son code avec un commit descriptif
+- Le Product Owner examine le code selon les critères ci-dessus
+- Si validé : le code est accepté et la tâche est marquée comme terminée dans le Kanban
+- Si modifications nécessaires : retour au développeur avec commentaires détaillés
+
+Cette Definition of Done garantit la qualité du code livré et la cohérence du projet tout au long du développement.
+
 ### Participants
 
 Équipe projet :
