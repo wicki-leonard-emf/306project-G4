@@ -518,6 +518,48 @@ export const updateRoomThresholds = async (req, res) => {
 };
 
 /**
+ * DELETE /api/rooms/:id
+ * Supprime une salle et toutes ses données associées (admin uniquement)
+ */
+export const deleteRoom = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Vérifier que la salle existe
+    const room = await prisma.room.findUnique({
+      where: { id },
+      include: {
+        sensors: true,
+        subscriptions: true
+      }
+    });
+
+    if (!room) {
+      return res.status(404).json({
+        error: 'Salle non trouvée',
+        code: 'ROOM_NOT_FOUND'
+      });
+    }
+
+    // Supprimer la salle (cascade delete via Prisma pour sensors, readings, subscriptions, alerts)
+    await prisma.room.delete({
+      where: { id }
+    });
+
+    res.json({
+      message: 'Salle supprimée avec succès',
+      deletedRoom: {
+        id: room.id,
+        name: room.name
+      }
+    });
+  } catch (error) {
+    console.error('Erreur deleteRoom:', error);
+    res.status(500).json({ error: 'Erreur lors de la suppression de la salle' });
+  }
+};
+
+/**
  * GET /api/rooms/:roomId/history?period=4h
  * Récupère l'historique des données d'une salle
  * Paramètres query: period (4h, 1d, 1w, 1m)

@@ -2,6 +2,7 @@ import { useState } from "react"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
 import imgLogo from "figma:asset/d0fc03f5c47a5583e2cfa35ac5f6aa36545efb07.png"
+import { authService } from "../services/authService"
 
 interface LoginProps {
   onLogin: (email: string, password: string) => void
@@ -21,20 +22,7 @@ export function Login({ onLogin, error, onShowRegister }: LoginProps) {
     setIsLoading(true)
 
     try {
-      const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "")
-
-      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ email, password })
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || "Erreur de connexion")
-      }
-
+      await authService.login(email, password)
       onLogin(email, password)
     } catch (err) {
       const message = err instanceof Error ? err.message : "Erreur de connexion"

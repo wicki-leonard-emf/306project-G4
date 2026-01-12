@@ -10,11 +10,10 @@ import { EditRoomModal } from "./components/EditRoomModal"
 import { ThresholdModal } from "./components/ThresholdModal"
 import { RoomDetailPage } from "./components/RoomDetailPage"
 import { SettingsPage } from "./components/SettingsPage"
-import { NotificationsPage } from "./components/NotificationsPage"
 import { UsersPage } from "./components/UsersPage"
-import { TransactionHistoryPage } from "./components/TransactionHistoryPage"
 import { DocumentationPage } from "./components/DocumentationPage"
 import svgPaths from "./imports/svg-734m2ckqag"
+import { fetchWithAuth } from "./lib/fetchWithAuth"
 
 interface Room {
   id: string
@@ -37,8 +36,6 @@ interface ApiRoom {
   currentHumidity?: number
   lastUpdate?: string
 }
-
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "")
 
 const generateChartData = (trend: "up" | "down") => {
   const data: number[] = []
@@ -166,12 +163,8 @@ export default function App({ onLogout }: AppProps) {
     const action = isCurrentlySubscribed ? 'DELETE' : 'POST'
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/subscriptions/rooms/${roomId}`, {
+      const response = await fetchWithAuth(`/api/subscriptions/rooms/${roomId}`, {
         method: action,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
       })
 
       if (!response.ok) {
@@ -209,12 +202,8 @@ export default function App({ onLogout }: AppProps) {
 
   const handleUpdateRoom = async (roomId: string, updates: { name: string; description: string }) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/rooms/${roomId}`, {
+      const response = await fetchWithAuth(`/api/rooms/${roomId}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
         body: JSON.stringify(updates),
       })
 
@@ -259,12 +248,8 @@ export default function App({ onLogout }: AppProps) {
 
   const handleDeleteRoom = async (roomId: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/rooms/${roomId}`, {
+      const response = await fetchWithAuth(`/api/rooms/${roomId}`, {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
       })
 
       if (!response.ok) {
@@ -312,33 +297,75 @@ export default function App({ onLogout }: AppProps) {
   const fetchRooms = async () => {
     try {
       setIsRefreshing(true)
-      const response = await fetch(`${API_BASE_URL}/api/rooms`)
+      const response = await fetchWithAuth('/api/rooms')
       if (!response.ok) {
         throw new Error(`API responded with status ${response.status}`)
       }
 
       const data: ApiRoom[] = await response.json()
 
-      setRooms((previousRooms) => {
-        return data.map((roomFromApi) => {
-          const previousRoom = previousRooms.find((room) => room.id === roomFromApi.id)
+      // Récupérer l'historique pour chaque salle (en parallèle)
+      const roomsWithHistory = await Promise.all(
+        data.map(async (roomFromApi) => {
+          const previousRoom = rooms.find((room) => room.id === roomFromApi.id)
           const rawTemp = Number(roomFromApi.currentTemp ?? 0)
           const rawHumidity = Number(roomFromApi.currentHumidity ?? 0)
 
           const temperature = Number.isFinite(rawTemp) ? Math.round(rawTemp * 10) / 10 : 0
           const humidity = Number.isFinite(rawHumidity) ? Math.round(rawHumidity) : 0
 
-          const trend: "up" | "down" =
-            previousRoom && previousRoom.temperature > temperature ? "down" : "up"
+          // Récupérer l'historique de la journée (1d)
+          let chartData: number[] = []
+          let trend: "up" | "down" = "up"
+          let percentage = 0
 
-          const percentage = previousRoom && previousRoom.temperature > 0
-            ? Math.round(((temperature - previousRoom.temperature) / previousRoom.temperature) * 100)
-            : 0
+          try {
+            const historyResponse = await fetchWithAuth(`/api/rooms/${roomFromApi.id}/history?period=1d`)
+            if (historyResponse.ok) {
+              const historyData = await historyResponse.json()
 
-          const normalizedValue = normalizeTempForChart(temperature)
-          const chartData = previousRoom?.chartData?.length
-            ? [...previousRoom.chartData.slice(-19), normalizedValue]
-            : Array.from({ length: 20 }, () => normalizedValue)
+              if (historyData.data && historyData.data.length > 0) {
+                // Extraire les températures des 24 dernières heures
+                const temps = historyData.data
+                  .filter((d: any) => d.temperature !== null)
+                  .map((d: any) => d.temperature)
+
+                if (temps.length > 0) {
+                  // Prendre jusqu'à 20 points équidistants pour le chart
+                  const step = Math.max(1, Math.floor(temps.length / 20))
+                  chartData = temps
+                    .filter((_: any, i: number) => i % step === 0)
+                    .slice(-20)
+                    .map((t: number) => normalizeTempForChart(t))
+
+                  // Calculer le trend et le pourcentage basé sur la moyenne des 4 dernières heures vs 4 heures précédentes
+                  const recentTemps = temps.slice(-4) // 4 dernières mesures
+                  const olderTemps = temps.slice(-8, -4) // 4 mesures d'avant
+
+                  if (recentTemps.length > 0 && olderTemps.length > 0) {
+                    const recentAvg = recentTemps.reduce((a: number, b: number) => a + b, 0) / recentTemps.length
+                    const olderAvg = olderTemps.reduce((a: number, b: number) => a + b, 0) / olderTemps.length
+
+                    trend = recentAvg > olderAvg ? "up" : "down"
+                    percentage = olderAvg > 0 ? Math.abs(Math.round(((recentAvg - olderAvg) / olderAvg) * 100)) : 0
+                  }
+                }
+              }
+            }
+          } catch (error) {
+            console.error(`Erreur lors de la récupération de l'historique pour ${roomFromApi.id}:`, error)
+          }
+
+          // Si pas de données d'historique, utiliser la valeur actuelle
+          if (chartData.length === 0) {
+            const normalizedValue = normalizeTempForChart(temperature)
+            chartData = Array.from({ length: 20 }, () => normalizedValue)
+          }
+
+          // Si les données ne font pas 20 points, compléter avec la valeur actuelle
+          while (chartData.length < 20) {
+            chartData.unshift(chartData[0] || normalizeTempForChart(temperature))
+          }
 
           return {
             id: roomFromApi.id,
@@ -353,7 +380,9 @@ export default function App({ onLogout }: AppProps) {
             description: roomFromApi.description,
           }
         })
-      })
+      )
+
+      setRooms(roomsWithHistory)
       setLastFetch(new Date())
     } catch (error) {
       console.error("Erreur lors de la récupération des salles:", error)
@@ -376,9 +405,7 @@ export default function App({ onLogout }: AppProps) {
   // Fonction pour récupérer les abonnements
   const fetchSubscriptions = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/subscriptions/me`, {
-        credentials: 'include',
-      })
+      const response = await fetchWithAuth('/api/subscriptions/me')
 
       if (!response.ok) {
         throw new Error(`Erreur ${response.status}`)
@@ -396,9 +423,7 @@ export default function App({ onLogout }: AppProps) {
   // Fonction pour récupérer les infos de l'utilisateur connecté
   const fetchUserInfo = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
-        credentials: 'include',
-      })
+      const response = await fetchWithAuth('/api/auth/me')
 
       if (response.ok) {
         const data = await response.json()
@@ -476,12 +501,8 @@ export default function App({ onLogout }: AppProps) {
               />
             ) : currentPage === "settings" ? (
               <SettingsPage />
-            ) : currentPage === "notifications" ? (
-              <NotificationsPage />
             ) : currentPage === "users" ? (
               <UsersPage />
-            ) : currentPage === "transactionHistory" ? (
-              <TransactionHistoryPage />
             ) : currentPage === "documentation" ? (
               <DocumentationPage />
             ) : (
@@ -491,7 +512,7 @@ export default function App({ onLogout }: AppProps) {
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
                         <h1 className="text-[30px] leading-[38px] font-semibold text-foreground mb-1">
-                          Bon retour, Olivia
+                          Bon retour {userEmail ? userEmail.split('@')[0] : ' !'} !
                         </h1>
                         <p className="text-muted-foreground">
                           Suivez et gérez le climat des salles de classes
@@ -744,33 +765,31 @@ export default function App({ onLogout }: AppProps) {
               </div>
             )}
           </div>
-        </div>
-
-        {/* Modals */}
-        <AddRoomModal
-          open={addRoomModalOpen}
-          onOpenChange={setAddRoomModalOpen}
-          onAddRoom={handleAddRoom}
-        />
-
-        <ThresholdModal
-          open={thresholdModalOpen}
-          onOpenChange={setThresholdModalOpen}
-          onSave={handleSaveThresholds}
-        />
-
-        {roomToEdit && (
-          <EditRoomModal
-            open={editRoomModalOpen}
-            onOpenChange={setEditRoomModalOpen}
-            room={{
-              id: roomToEdit.id,
-              name: roomToEdit.room,
-              description: roomToEdit.description,
-            }}
-            onUpdateRoom={handleUpdateRoom}
+          <AddRoomModal
+            open={addRoomModalOpen}
+            onOpenChange={setAddRoomModalOpen}
+            onAddRoom={handleAddRoom}
           />
-        )}
+
+          <ThresholdModal
+            open={thresholdModalOpen}
+            onOpenChange={setThresholdModalOpen}
+            onSave={handleSaveThresholds}
+          />
+
+          {roomToEdit && (
+            <EditRoomModal
+              open={editRoomModalOpen}
+              onOpenChange={setEditRoomModalOpen}
+              room={{
+                id: roomToEdit.id,
+                name: roomToEdit.room,
+                description: roomToEdit.description,
+              }}
+              onUpdateRoom={handleUpdateRoom}
+            />
+          )}
+        </div>
       </div>
     </SidebarProvider>
   )
