@@ -589,18 +589,7 @@ export default function App({ onLogout }: AppProps) {
                             Gérer le seuil par défaut
                           </span>
                         </Button>
-                        <Button variant="default" onClick={() => setAddRoomModalOpen(true)}>
-                          <svg className="size-5" fill="none" viewBox="0 0 20 20">
-                            <path
-                              d={svgPaths.p17eb400}
-                              stroke="white"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="1.67"
-                            />
-                          </svg>
-                          <span className="text-sm font-semibold">Ajouter</span>
-                        </Button>
+                        {/* Bouton 'Ajouter' supprimé — inutile sur la home */}
                       </div>
                     </div>
                   </div>
