@@ -41,9 +41,9 @@ Nom des candidats : Leonard Wiki, Gabriel Beer, Cyril Dubusc
 7. [Conclusion](#conclusion)  
    7.1 [Améliorations possibles](#améliorations-possibles)  
    7.2 [Auto-évaluation](#auto-évaluation)  
-   7.3 [Conclusion du module de Gabriel](#conclusion-du-module-de-Gabriel)  
+   7.3 [Conclusion du module de Gabriel](#conclusion-du-module-de-gabriel)  
    7.4 [Conclusion du module de Léonard](#conclusion-du-module-de-Léonard)  
-   7.5 [Conclusion du module de Cyril](#conclusion-du-module-de-Cyril)
+   7.5 [Conclusion du module de Cyril](#conclusion-du-module-de-cyril)
 
 8. [Bibliographie : liste des sources et références](#bibliographie--liste-des-sources-et-références)
 
@@ -363,6 +363,7 @@ Résumé du modèle relationnel :
 **Les seuils sont communs à tous les utilisateurs** et gérés au niveau de la salle, pas individuellement.
 
 Stockés dans l'entité `rooms` :
+
 - `minTemp`, `maxTemp` : limites température
 - `minHumidity`, `maxHumidity` : limites humidité
 - `alertDelay` : délai minimum entre alertes (anti-spam)
@@ -374,6 +375,7 @@ Stockés dans l'entité `rooms` :
 **Un utilisateur ne reçoit des alertes que s'il s'est abonné** à la salle.
 
 **Fonctionnement :**
+
 - Bouton S'abonner/Se désabonner sur chaque salle
 - Stocké dans `room_subscriptions` (relation N-N users ↔ rooms)
 - Admin peut voir qui est abonné, mais ne peut pas forcer
@@ -408,6 +410,7 @@ Cette section clarifie les divergences entre le scope initial du cahier des char
 ## Ce qui a été fait (conforme au scope)
 
 **Fonctionnalités core livrées :**
+
 - Tableau de bord web responsive affichant température/humidité en temps réel par salle
 - Système d'alertes automatisé avec déclenchement sur seuils (Admin config, abonnement utilisateur)
 - Historique des mesures consultable
@@ -416,6 +419,7 @@ Cette section clarifie les divergences entre le scope initial du cahier des char
 - Script RPi en Docker + Node.js pour collecte capteurs Phidget
 
 **Infrastructure :**
+
 - Déploiement Vercel (frontend + backend serverless)
 - Base PostgreSQL Neon avec Prisma ORM
 - Collection Postman pour tests API
@@ -450,7 +454,6 @@ Ces fonctionnalités étaient mentionnées comme "améliorations futures" ou exp
 - **Déploiement multi-RPi automatisé** : Faisable mais nécessiterait infrastructure de provisioning
 - **Tableau d'analyse avancée** (moyennes/percentiles) : Future phase
 
-
 ## Résumé des décisions
 
 | Aspect | Scope initial | Réalisé | Impact |
@@ -459,7 +462,6 @@ Ces fonctionnalités étaient mentionnées comme "améliorations futures" ou exp
 | Alertes | Email + push | Email via Resend | Suffisant, fiable |
 | Historique | 7 jours min | Illimité | Meilleur |
 | RPi | Node.js | Node.js Docker + boucle | Plus portable |
-
 
 # Réalisation
 
@@ -511,7 +513,7 @@ _(à compléter par Gabriel)_
 
 ## Conclusion du module de Léonard
 
-_(à compléter par Léonard)_
+Le module 306 n'a pas représenté un défi technique majeur pour moi, car les compétences en programmation étaient déjà acquises. Cependant, il a été particulièrement enrichissant du point de vue de la gestion de projet. J'ai pu apprendre et rafraîchir mes connaissances en méthodologies agiles, Scrum, planification et suivi d'un projet en équipe. Cette expérience m'a permis de mieux comprendre l'importance de la coordination, de la répartition des tâches et de l'adaptation aux imprévus, éléments essentiels pour mener à bien un projet quelqu'il soit.
 
 ## Conclusion du module de Cyril
 
@@ -523,7 +525,7 @@ _(à compléter par Cyril)_
 - `documentation/1_BusinessCase.md` — Business Case et justification.
 - `code/back/Postman_Collection.json` — Collection Postman utilisée pour les tests API.
 - Documentation Phidget — pour l'intégration des capteurs (lien dans le cahier des charges).
-- Prisma documentation — https://www.prisma.io/docs
+- Prisma documentation — <https://www.prisma.io/docs>
 
 # Glossaire
 
