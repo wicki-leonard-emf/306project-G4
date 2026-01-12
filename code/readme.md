@@ -1,40 +1,66 @@
-# 💻 Dossier Code
+# 💻 SensorHub - Code Source
 
-Ce dossier contient **l'intégralité du code source** développé dans le cadre du **module 306 – Réaliser un petit projet informatique**. Il représente la partie technique du projet et regroupe tous les éléments nécessaires pour exécuter, tester et comprendre l'application.
+Code source du projet **SensorHub** développé dans le cadre du **module 306 – Réaliser un petit projet informatique**.
 
----
-
-## 📁 Contenu du dossier
-
-Selon la structure du projet, ce dossier peut inclure :
-
-### **1. Code source principal**
-
-Les fichiers du programme (backend, frontend ou autre), organisés par modules, classes ou composants.
-
-### **2. Scripts**
-
-Scripts d'installation, d'exécution, d'automatisation ou d'outils utiles au développement.
-
-### **3. Ressources**
-
-Images, fichiers de configuration, données de test ou autres ressources nécessaires au fonctionnement du code.
-
-### **4. Tests** *(si présents)*
-
-Tests unitaires ou fonctionnels permettant de vérifier le bon fonctionnement de l'application.
+SensorHub est une application web de monitoring de salles de classe (température et humidité) avec interface de contrôle et alertes.
 
 ---
 
+## 📁 Structure du projet
 
-## 🎯 Objectif du dossier
+### **back/** - Backend (Express.js + Node.js)
+- API REST pour la gestion des salles, capteurs et lectures
+- Authentification JWT
+- Base de données PostgreSQL avec Prisma ORM
 
-Le dossier **code** permet de :
+### **front/** - Frontend (React + TypeScript + Vite)
+- Interface utilisateur responsive
+- Dashboard en temps réel
+- Gestion des seuils de température et humidité
 
-* Rassembler tout le développement du projet.
-* Répertorier les choix techniques.
-* Fournir une base pour l'analyse, le test et l'amélioration du programme.
+### **rpi/** - Raspberry Pi (Node.js)
+- Script de lecture des capteurs Phidget
+- Envoi des données au serveur
+- Docker support
+
+### **docs/** - 📚 Documentation complète
+- **[docs/api/](./docs/api/)** - Documentation API et collection Postman
+- **[docs/guides/](./docs/guides/)** - Guides pratiques (tests, JWT, tâches)
+- **[docs/setup/](./docs/setup/)** - Guide d'installation (Raspberry Pi)
+
+Consultez **[docs/README.md](./docs/README.md)** pour naviguer la documentation.
 
 ---
 
-Si vous souhaitez réorganiser la structure du code, ajouter des explications plus techniques ou intégrer une architecture détaillée, n'hésitez pas à le demander !
+## 🚀 Démarrage rapide
+
+### Backend
+```bash
+cd back
+npm install
+npm run dev
+```
+
+### Frontend
+```bash
+cd front
+pnpm install
+pnpm dev
+```
+
+### Raspberry Pi
+```bash
+cd rpi
+docker-compose up
+```
+
+---
+
+## 📖 Documentation
+
+Pour accéder à la documentation complète, consultez **[docs/README.md](./docs/README.md)**
+
+- 🔌 API endpoints → [docs/api/API_DOCUMENTATION.md](./docs/api/API_DOCUMENTATION.md)
+- 🧪 Tests → [docs/guides/TESTING_README.md](./docs/guides/TESTING_README.md)
+- 🔐 JWT Auth → [docs/guides/JWT_MIGRATION_GUIDE.md](./docs/guides/JWT_MIGRATION_GUIDE.md)
+- ⚙️ Setup Raspberry Pi → [docs/setup/INSTALL_RASPBERRY.md](./docs/setup/INSTALL_RASPBERRY.md)
