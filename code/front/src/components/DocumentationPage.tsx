@@ -236,8 +236,72 @@ Content-Type: application/json
     element?.scrollIntoView({ behavior: "smooth", block: "start" })
   }
 
+  const [activeSection, setActiveSection] = React.useState<string>(sections[0].id)
+  const [displayedSection, setDisplayedSection] = React.useState<string>(sections[0].id)
+  const debounceRef = React.useRef<number | null>(null)
+
+  const navRef = React.useRef<HTMLDivElement | null>(null)
+  const indicatorRef = React.useRef<HTMLDivElement | null>(null)
+
+  // reposition indicator when active section changes or on resize
+  React.useEffect(() => {
+    const updateIndicator = () => {
+      const activeBtn = navRef.current?.querySelector(`[data-id="${displayedSection}"]`) as HTMLElement | null
+      if (!activeBtn || !indicatorRef.current) return
+      indicatorRef.current.style.height = `${activeBtn.offsetHeight}px`
+      indicatorRef.current.style.transform = `translateY(${activeBtn.offsetTop}px)`
+    }
+
+    updateIndicator()
+    window.addEventListener('resize', updateIndicator)
+    return () => window.removeEventListener('resize', updateIndicator)
+  }, [displayedSection])
+
+  // Debounce visual highlight to reduce jitter when observer flips quickly
+  React.useEffect(() => {
+    if (debounceRef.current) {
+      window.clearTimeout(debounceRef.current)
+    }
+    debounceRef.current = window.setTimeout(() => {
+      setDisplayedSection(activeSection)
+      debounceRef.current = null
+    }, 140)
+
+    return () => {
+      if (debounceRef.current) {
+        window.clearTimeout(debounceRef.current)
+        debounceRef.current = null
+      }
+    }
+  }, [activeSection])
+
+  React.useEffect(() => {
+    const ids = sections.map((s) => s.id)
+    const elements = ids.map((id) => document.getElementById(id)).filter(Boolean) as HTMLElement[]
+
+    if (elements.length === 0) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => (b.intersectionRatio ?? 0) - (a.intersectionRatio ?? 0))[0]
+
+        if (visible && visible.target && (visible.target as Element).id) {
+          setActiveSection((visible.target as Element).id)
+        }
+      },
+      { root: null, rootMargin: '-40% 0px -40% 0px', threshold: [0, 0.1, 0.25, 0.5, 0.75, 1] }
+    )
+
+    elements.forEach((el) => observer.observe(el))
+    return () => observer.disconnect()
+    // sections is static in this component so empty deps are OK
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   return (
-    <div className="flex-1 overflow-auto bg-white">
+    <div className="flex-1 bg-white">
       <div className="flex flex-col h-full">
         <div className="flex-1 py-10 px-6 md:px-10">
           <div className="max-w-6xl mx-auto">
@@ -265,19 +329,35 @@ Content-Type: application/json
 
             <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6">
               <aside className="lg:sticky lg:top-6 self-start">
-                <div className="rounded-[10px] border border-[#E9EAEB] bg-white p-4">
+                <div className="rounded-[10px] top-0 border border-[#E9EAEB] bg-white p-4">
                   <div className="text-sm font-semibold text-[#181d27] mb-3">Sommaire</div>
-                  <nav className="space-y-1">
-                    {sections.map((s) => (
-                      <button
-                        key={s.id}
-                        type="button"
-                        onClick={() => scrollTo(s.id)}
-                        className="w-full text-left text-sm text-[#535862] hover:text-[#181d27] rounded-md px-2 py-1 hover:bg-[#FAFAFA]"
-                      >
-                        {s.title}
-                      </button>
-                    ))}
+                  <nav ref={navRef} className="relative space-y-1">
+                    <div
+                      ref={indicatorRef}
+                      className="absolute left-0 right-0 bg-[#FAFAFA] rounded-md pointer-events-none transform transition-transform duration-500 ease-out"
+                      style={{ transform: 'translateY(0px)', height: 0 }}
+                    />
+
+                    {sections.map((s) => {
+                      const isActive = displayedSection === s.id
+                      return (
+                        <button
+                          key={s.id}
+                          data-id={s.id}
+                          type="button"
+                          onClick={() => scrollTo(s.id)}
+                          aria-current={isActive ? 'true' : undefined}
+                          className="relative w-full text-left text-sm rounded-md px-2 py-1 hover:bg-[#FAFAFA] transition-colors duration-200"
+                        >
+                          <span
+                            className={`inline-block align-middle transition duration-300 ease-out transform ${isActive ? 'scale-105 text-[#181d27] font-semibold' : 'scale-100 text-[#535862] opacity-70'
+                              }`}
+                          >
+                            {s.title}
+                          </span>
+                        </button>
+                      )
+                    })}
                   </nav>
                 </div>
               </aside>
