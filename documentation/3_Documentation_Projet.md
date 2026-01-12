@@ -673,8 +673,6 @@ Procédure recommandée :
 
 ## Protocole de tests
 
-## Protocole de tests
-
 | Numéro de test | Date | Description                    | Résultat désiré                                                | Résultat obtenu |
 | -------------: | ---: | ------------------------------ | -------------------------------------------------------------- | --------------- |
 |             F1 | (ex) | API - Create room              | 201 Created + body contenant `room`                            | OK              |
@@ -698,7 +696,7 @@ Procédure recommandée :
 
 ## Conclusion du module de Gabriel
 
-_(à compléter par Gabriel)_
+Le module 306 m'a permis de découvrir le rôle de Product Owner et d'approfondir ma compréhension de la méthodologie agile. En tant que PO, j'ai appris à définir et valider les critères d'acceptation (Definition of Done), à prioriser les tâches dans le Kanban et à assurer la revue de code de l'équipe. Cette expérience m'a fait réaliser l'importance de la coordination entre les différents acteurs du projet et de la validation continue des livrables. La gestion du backlog, la planification des sprints et l'adaptation aux imprévus m'ont donné une vision globale de la gestion de projet au-delà du simple développement technique.
 
 ## Conclusion du module de Léonard
 
