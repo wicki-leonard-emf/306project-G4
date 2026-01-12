@@ -456,12 +456,12 @@ Ces fonctionnalités étaient mentionnées comme "améliorations futures" ou exp
 
 ## Résumé des décisions
 
-| Aspect | Scope initial | Réalisé | Impact |
-|--------|---------------|---------|--------|
-| Seuils | Config par room | Config admin centralisée | Plus simple, cohérent |
-| Alertes | Email + push | Email via Resend | Suffisant, fiable |
-| Historique | 7 jours min | Illimité | Meilleur |
-| RPi | Node.js | Node.js Docker + boucle | Plus portable |
+| Aspect     | Scope initial   | Réalisé                  | Impact                |
+| ---------- | --------------- | ------------------------ | --------------------- |
+| Seuils     | Config par room | Config admin centralisée | Plus simple, cohérent |
+| Alertes    | Email + push    | Email via Resend         | Suffisant, fiable     |
+| Historique | 7 jours min     | Illimité                 | Meilleur              |
+| RPi        | Node.js         | Node.js Docker + boucle  | Plus portable         |
 
 # Réalisation
 
@@ -486,13 +486,15 @@ Procédure recommandée :
 
 ## Protocole de tests
 
-| Numéro de test | Date | Description                    | Résultat désiré                                                |
-| -------------: | ---: | ------------------------------ | -------------------------------------------------------------- |
-|             F1 | (ex) | API - Create room              | 201 Created + body contenant `room`                            |
-|             F2 | (ex) | API - Get rooms                | 200 OK + liste des salles avec `currentTemp`/`currentHumidity` |
-|             F3 | (ex) | API - Ingest batch readings    | 201 Created, résumé `created`/`failed`                         |
-|             F4 | (ex) | API - Missing API key          | 401 Unauthorized                                               |
-|             F5 | (ex) | Frontend - Dashboard rendering | Affiche les `RoomCard` et indicateurs de seuils                |
+## Protocole de tests
+
+| Numéro de test | Date | Description                    | Résultat désiré                                                | Résultat obtenu |
+| -------------: | ---: | ------------------------------ | -------------------------------------------------------------- | --------------- |
+|             F1 | (ex) | API - Create room              | 201 Created + body contenant `room`                            |                 |
+|             F2 | (ex) | API - Get rooms                | 200 OK + liste des salles avec `currentTemp`/`currentHumidity` |                 |
+|             F3 | (ex) | API - Ingest batch readings    | 201 Created, résumé `created`/`failed`                         |                 |
+|             F4 | (ex) | API - Missing API key          | 401 Unauthorized                                               |                 |
+|             F5 | (ex) | Frontend - Dashboard rendering | Affiche les `RoomCard` et indicateurs de seuils                |                 |
 
 # Conclusion
 
@@ -529,17 +531,17 @@ _(à compléter par Cyril)_
 
 # Glossaire
 
-| Terme   | Définition                                                            |
-| ------- | --------------------------------------------------------------------- |
-| API     | Interface REST fournie par le backend (`/api` endpoints)              |
-| CSV     | Comma-Separated Values — format de fichier tabulaire                 |
-| IoT     | Internet of Things — système d'appareils connectés et communicants   |
-| KPI     | Indicateur clé de performance (ex : ergonomie, fiabilité des alertes) |
-| MVP     | Minimum Viable Product — version initiale validant la chaîne complète |
+| Terme   | Définition                                                                 |
+| ------- | -------------------------------------------------------------------------- |
+| API     | Interface REST fournie par le backend (`/api` endpoints)                   |
+| CSV     | Comma-Separated Values — format de fichier tabulaire                       |
+| IoT     | Internet of Things — système d'appareils connectés et communicants         |
+| KPI     | Indicateur clé de performance (ex : ergonomie, fiabilité des alertes)      |
+| MVP     | Minimum Viable Product — version initiale validant la chaîne complète      |
 | ORM     | Object-Relational Mapping — mappage objet-relationnel pour base de données |
-| Phidget | Capteurs Phidget utilisés pour température et humidité                |
-| REST    | Representational State Transfer — style architectural pour API web    |
-| RPi     | Raspberry Pi, unité edge qui lit les capteurs et envoie les données   |
-| SQL     | Structured Query Language — langage de requête pour bases de données  |
-| UI      | User Interface — interface utilisateur, ensemble d'écrans et menus     |
-| UML     | Unified Modeling Language — langage de modélisation graphique         |
+| Phidget | Capteurs Phidget utilisés pour température et humidité                     |
+| REST    | Representational State Transfer — style architectural pour API web         |
+| RPi     | Raspberry Pi, unité edge qui lit les capteurs et envoie les données        |
+| SQL     | Structured Query Language — langage de requête pour bases de données       |
+| UI      | User Interface — interface utilisateur, ensemble d'écrans et menus         |
+| UML     | Unified Modeling Language — langage de modélisation graphique              |
