@@ -366,17 +366,7 @@ Architecture technique :
 
 ## Diagramme Entité-Relation
 
-Le schéma Prisma (`code/back/prisma/schema.prisma`) définit les entités principales : `User`, `Room`, `Sensor`, `SensorReading`, `RoomSubscription`. Voir le fichier pour la structure détaillée et les relations.
-
-## Modèle relationnel de la base de données
-
-Résumé du modèle relationnel :
-
-- `users` : id, email, password (hash), role, timestamps.
-- `rooms` : id, name, description, seuils (minTemp, maxTemp, minHumidity, maxHumidity), alertDelay.
-- `sensors` : id, roomId, type (TEMPERATURE/HUMIDITY), serialNumber.
-- `sensor_readings` : id, sensorId, value, timestamp.
-- `room_subscriptions` : id, userId, roomId (unique user-room).
+![img](./diagramme_relationel.png)
 
 ## Gestion des seuils et système d'abonnement
 
@@ -401,17 +391,6 @@ Stockés dans l'entité `rooms` :
 - Bouton S'abonner/Se désabonner sur chaque salle
 - Stocké dans `room_subscriptions` (relation N-N users ↔ rooms)
 - Admin peut voir qui est abonné, mais ne peut pas forcer
-
-## Diagrammes de classes
-
-Les diagrammes de classes sont disponibles dans `documentation/5_Modele_Analyses_UML.qea` et reflètent les entités Prisma et les contrôleurs Express.
-
-## Diagrammes de séquence des interactions
-
-Les séquences modélisent principalement :
-
-- Envoi de lecture : RPi → `POST /api/sensors/readings` (X-API-Key) → backend validation → création `SensorReading`.
-- Consultation historique : Frontend → `GET /api/rooms/:roomId/history?period=...` → backend agrège readings → frontend affiche chart.
 
 ## Concept de tests
 
