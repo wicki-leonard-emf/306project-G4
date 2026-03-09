@@ -633,6 +633,19 @@ Les diagrammes ont été modélisés dans Enterprise Architect et exportés dans
 
 ![img](./diagrammes/diagramme_activite_envoi_temperatures.svg)
 
+<<<<<<< HEAD
+=======
+### Feature : login
+
+#### Diagramme d'activité
+
+![img](./diagrammes/DiagrammeActivitr-login.drawio.png)
+
+#### Diagramme de séquence
+
+![img](./diagrammes/DiagrammeSequence-login.drawio.png)
+
+>>>>>>> a44d3686bded36be4befa9b6805287dc0f66f642
 ## Maquettes
 
 Les maquettes fonctionnelles sont incarnées par les composants React dans `code/front/src/components/` (ex. `RoomCard.tsx`, `RoomDetailPage.tsx`, `RoomThresholdModal.tsx`). Le frontend utilise Recharts pour les graphiques et Radix/UI pour les composants.
