@@ -260,6 +260,285 @@ Acteurs identifiés :
 - **Élève** : consultation limitée des données (sensibilisation).
 - **Raspberry Pi (système IoT)** : envoie les lectures via `X-API-Key`.
 
+## Diagramme de classes
+
+```mermaid
+classDiagram
+    direction TB
+
+    %% ─── Enums ───────────────────────────────────────────────
+    class UserRole {
+        <<enumeration>>
+        ADMIN
+        ENSEIGNANT
+        ELEVE
+    }
+
+    class SensorType {
+        <<enumeration>>
+        TEMPERATURE
+        HUMIDITY
+    }
+
+    %% ─── Entités base de données (Prisma models) ─────────────
+    class User {
+        +String id
+        +String email
+        +String password
+        +UserRole role
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+
+    class Room {
+        +String id
+        +String name
+        +String? description
+        +Float? minTemp
+        +Float? maxTemp
+        +Float? minHumidity
+        +Float? maxHumidity
+        +Int? alertDelay
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+
+    class RoomSubscription {
+        +String id
+        +String userId
+        +String roomId
+        +DateTime createdAt
+    }
+
+    class Sensor {
+        +String id
+        +String roomId
+        +SensorType type
+        +String serialNumber
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+
+    class SensorReading {
+        +String id
+        +String sensorId
+        +Float value
+        +DateTime timestamp
+        +DateTime createdAt
+    }
+
+    class Alert {
+        +String id
+        +String roomId
+        +SensorType sensorType
+        +String thresholdType
+        +Float value
+        +Float threshold
+        +DateTime sentAt
+        +Int recipientCount
+    }
+
+    %% ─── Relations base de données ───────────────────────────
+    User "1" --> "0..*" RoomSubscription : subscriptions
+    Room "1" --> "0..*" RoomSubscription : subscriptions
+    Room "1" --> "0..*" Sensor : sensors
+    Room "1" --> "0..*" Alert : alerts
+    Sensor "1" --> "0..*" SensorReading : readings
+
+    User --> UserRole : role
+    Sensor --> SensorType : type
+    Alert --> SensorType : sensorType
+
+    %% ─── Services backend ────────────────────────────────────
+    class EmailService {
+        <<service>>
+        +sendThresholdAlert(recipients, roomName, sensorType, currentValue, threshold, thresholdType) Promise
+    }
+
+    class AuthService {
+        <<service>>
+        -String token
+        +setToken(token) void
+        +getToken() String
+        +removeToken() void
+        +isAuthenticated() boolean
+        +getAuthHeader() HeadersInit
+        +login(email, password) Promise~AuthResponse~
+        +register(email, password) Promise~AuthResponse~
+        +getCurrentUser() Promise~User~
+        +logout() Promise~void~
+        +validateToken() Promise~boolean~
+    }
+
+    %% ─── Contrôleurs backend ─────────────────────────────────
+    class UserController {
+        <<controller>>
+        +createUser(req, res) void
+        +getAllUsers(req, res) void
+        +getUserById(req, res) void
+        +updateUser(req, res) void
+        +deleteUser(req, res) void
+    }
+
+    class AuthController {
+        <<controller>>
+        +register(req, res) void
+        +login(req, res) void
+        +getMe(req, res) void
+        +logout(req, res) void
+    }
+
+    class RoomController {
+        <<controller>>
+        +getRooms(req, res) void
+        +getRoomById(req, res) void
+        +createRoom(req, res) void
+        +updateRoom(req, res) void
+        +updateRoomThresholds(req, res) void
+        +deleteRoom(req, res) void
+        +ingestRoomReadings(req, res) void
+        +getRoomHistory(req, res) void
+    }
+
+    class SensorController {
+        <<controller>>
+        +createSensor(req, res) void
+        +getSensors(req, res) void
+        +ingestReading(req, res) void
+        -checkThresholdsAndAlert(sensor, value) Promise
+    }
+
+    class SubscriptionController {
+        <<controller>>
+        +subscribeToRoom(req, res) void
+        +unsubscribeFromRoom(req, res) void
+        +getMySubscriptions(req, res) void
+        +getRoomSubscribers(req, res) void
+    }
+
+    class AlertController {
+        <<controller>>
+        +getMyAlerts(req, res) void
+        +getAllAlerts(req, res) void
+        +deleteAlert(req, res) void
+        +deleteAllAlerts(req, res) void
+    }
+
+    SensorController ..> EmailService : uses
+    SensorController ..> Alert : creates
+    UserController ..> User : manages
+    RoomController ..> Room : manages
+    SubscriptionController ..> RoomSubscription : manages
+    AlertController ..> Alert : manages
+
+    %% ─── Interfaces / types frontend ─────────────────────────
+    class ApiRoom {
+        <<interface>>
+        +String id
+        +String name
+        +String? description
+        +Float? currentTemp
+        +Float? currentHumidity
+        +String? lastUpdate
+    }
+
+    class RoomData {
+        <<interface>>
+        +String id
+        +String room
+        +Float temperature
+        +Float humidity
+        +String trend
+        +Float percentage
+        +String period
+        +Float[] chartData
+        +String? category
+        +String? description
+    }
+
+    class AuthResponse {
+        <<interface>>
+        +UserFront user
+        +String token
+    }
+
+    class UserFront {
+        <<interface>>
+        +String id
+        +String email
+        +String role
+    }
+
+    AuthResponse --> UserFront : contains
+    AuthService ..> AuthResponse : returns
+
+    %% ─── Composants React principaux ─────────────────────────
+    class App {
+        <<component>>
+        -Room[] rooms
+        -String searchTerm
+        -String userRole
+        -String userEmail
+        -Map subscriptions
+        +fetchRooms() void
+        +fetchSubscriptions() void
+        +handleAddRoom(room) void
+        +handleEditRoom(roomId) void
+        +handleDeleteRoom(roomId) void
+        +handleToggleSubscription(roomId) void
+    }
+
+    class RoomCard {
+        <<component>>
+        +String id
+        +String room
+        +Float temperature
+        +Float humidity
+        +String trend
+        +Boolean? isSubscribed
+        +onToggleSubscription(roomId) void
+        +onEditRoom(roomId) void
+        +onDeleteRoom(roomId) void
+        +onEditThreshold(roomId) void
+        +String? userRole
+    }
+
+    class RoomDetailPage {
+        <<component>>
+        +RoomData room
+        +Boolean isSubscribed
+        +onToggleSubscription(roomId) void
+        +onBack() void
+        -HistoricalData historicalData
+        -String selectedPeriod
+    }
+
+    class UsersPage {
+        <<component>>
+        -UserFront[] users
+        -Boolean loading
+        +fetchUsers() void
+        +handleCreateUser() void
+        +handleUpdateRole() void
+        +handleDeleteUser() void
+    }
+
+    class Sidebar {
+        <<component>>
+        +String currentPage
+        +onPageChange(page) void
+        +String? userRole
+        +String? userEmail
+        +onLogout() void
+    }
+
+    App "1" *-- "0..*" RoomCard : renders
+    App --> RoomDetailPage : navigates to
+    App --> Sidebar : contains
+    App --> UsersPage : navigates to
+    App ..> AuthService : uses
+```
+
 ## Diagrammes d'activités / de séquence
 
 Les diagrammes ont été modélisés dans Enterprise Architect et exportés dans `documentation/5_Modele_Analyses_UML.qea`. Un aperçu :
