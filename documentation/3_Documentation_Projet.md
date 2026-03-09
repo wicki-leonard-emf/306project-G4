@@ -265,6 +265,16 @@ Acteurs identifiés :
 Les diagrammes ont été modélisés dans Enterprise Architect et exportés dans `documentation/5_Modele_Analyses_UML.qea`. Un aperçu :
 ![img](./use-case.png)
 
+### Features : Abonnement à une salle
+
+#### Diagramme de séquence
+
+![img](./diagramme-sequence-abonnement.png)
+
+#### Diagramme d'activité
+
+![img](./diagramme-activité-abonnementpng.png)
+
 ## Maquettes
 
 Les maquettes fonctionnelles sont incarnées par les composants React dans `code/front/src/components/` (ex. `RoomCard.tsx`, `RoomDetailPage.tsx`, `RoomThresholdModal.tsx`). Le frontend utilise Recharts pour les graphiques et Radix/UI pour les composants.
@@ -538,32 +548,27 @@ Application React moderne organisée dans `code/front/src/` :
 **Composants principaux réalisés :**
 
 - **Authentication** :
-
   - `Login.tsx` : Formulaire de connexion avec validation
   - `Register.tsx` : Inscription nouveaux utilisateurs
   - Gestion sessions via cookies, redirection automatique si non authentifié
 
 - **Dashboard** :
-
   - `RoomCard.tsx` : Carte affichant température/humidité actuelle par salle avec indicateurs visuels de seuils
   - Grille responsive adaptative (desktop/tablet/mobile)
   - Indicateurs colorés (vert/orange/rouge) selon dépassement seuils
 
 - **Détail salle** :
-
   - `RoomDetailPage.tsx` : Page dédiée par salle avec graphiques historiques
   - Sélecteur période (24h, 7j, 30j, custom)
   - Graphiques temps réel (température et humidité) avec Recharts
   - Bouton abonnement/désabonnement aux alertes
 
 - **Configuration** :
-
   - `RoomThresholdModal.tsx` : Modal de configuration seuils (Admin uniquement)
   - Validation ranges (min < max) côté client
   - Sauvegarde temps réel avec feedback utilisateur
 
 - **Notifications** :
-
   - `NotificationsPage.tsx` : Historique des alertes reçues
   - Filtrage par salle et période
 
