@@ -263,17 +263,28 @@ Acteurs identifiés :
 ## Diagrammes d'activités / de séquence
 
 Les diagrammes ont été modélisés dans Enterprise Architect et exportés dans `documentation/5_Modele_Analyses_UML.qea`. Un aperçu :
-![img](./use-case.png)
+![img](./diagrammes/use-case.png)
 
 ### Features : Abonnement à une salle
 
 #### Diagramme de séquence
 
-![img](./diagramme-sequence-abonnement.png)
+![img](./diagrammes/diagramme-sequence-abonnement.png)
 
 #### Diagramme d'activité
 
-![img](./diagramme-activité-abonnementpng.png)
+![img](./diagrammes/diagramme-activité-abonnementpng)
+
+### Feature : Envoi données du capteur de température au serveur 
+
+#### Diagramme de séquence
+
+![img](./diagrammes/diagramme_sequence_envoi_temperatures.svg)
+
+#### Diagramme d'activité
+
+![img](./diagrammes/diagramme_activite_envoi_temperatures.svg)
+
 
 ## Maquettes
 
