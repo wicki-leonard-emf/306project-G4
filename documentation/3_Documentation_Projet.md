@@ -532,11 +532,80 @@ classDiagram
         +onLogout() void
     }
 
+    class NotificationsPage {
+        <<component>>
+        -Alert[] alerts
+        +fetchAlerts() void
+        +handleDeleteAlert(id) void
+        +handleDeleteAll() void
+    }
+
+    class SettingsPage {
+        <<component>>
+        -Boolean emailNotifications
+        -Boolean darkMode
+        -Boolean autoRefresh
+    }
+
+    class Login {
+        <<component>>
+        +onLogin(email, password) void
+        +String error
+        +onShowRegister() void
+    }
+
+    class Register {
+        <<component>>
+        +onRegister(email, password) void
+        +onBackToLogin() void
+        +String error
+    }
+
     App "1" *-- "0..*" RoomCard : renders
     App --> RoomDetailPage : navigates to
     App --> Sidebar : contains
     App --> UsersPage : navigates to
+    App --> NotificationsPage : navigates to
+    App --> SettingsPage : navigates to
     App ..> AuthService : uses
+
+    %% ─── Styles par couche ───────────────────────────────────
+    %% Modèles → rose
+    style User fill:#f9a8d4,stroke:#be185d,color:#000
+    style Room fill:#f9a8d4,stroke:#be185d,color:#000
+    style RoomSubscription fill:#f9a8d4,stroke:#be185d,color:#000
+    style Sensor fill:#f9a8d4,stroke:#be185d,color:#000
+    style SensorReading fill:#f9a8d4,stroke:#be185d,color:#000
+    style Alert fill:#f9a8d4,stroke:#be185d,color:#000
+    style UserRole fill:#f9a8d4,stroke:#be185d,color:#000
+    style SensorType fill:#f9a8d4,stroke:#be185d,color:#000
+
+    %% Contrôleurs → vert
+    style UserController fill:#86efac,stroke:#15803d,color:#000
+    style AuthController fill:#86efac,stroke:#15803d,color:#000
+    style RoomController fill:#86efac,stroke:#15803d,color:#000
+    style SensorController fill:#86efac,stroke:#15803d,color:#000
+    style SubscriptionController fill:#86efac,stroke:#15803d,color:#000
+    style AlertController fill:#86efac,stroke:#15803d,color:#000
+
+    %% Services → bleu
+    style EmailService fill:#93c5fd,stroke:#1d4ed8,color:#000
+    style AuthService fill:#93c5fd,stroke:#1d4ed8,color:#000
+
+    %% Vues (composants React) → jaune
+    style App fill:#fde68a,stroke:#b45309,color:#000
+    style RoomCard fill:#fde68a,stroke:#b45309,color:#000
+    style RoomDetailPage fill:#fde68a,stroke:#b45309,color:#000
+    style UsersPage fill:#fde68a,stroke:#b45309,color:#000
+    style Sidebar fill:#fde68a,stroke:#b45309,color:#000
+    style NotificationsPage fill:#fde68a,stroke:#b45309,color:#000
+    style SettingsPage fill:#fde68a,stroke:#b45309,color:#000
+    style Login fill:#fde68a,stroke:#b45309,color:#000
+    style Register fill:#fde68a,stroke:#b45309,color:#000
+    style ApiRoom fill:#fde68a,stroke:#b45309,color:#000
+    style RoomData fill:#fde68a,stroke:#b45309,color:#000
+    style AuthResponse fill:#fde68a,stroke:#b45309,color:#000
+    style UserFront fill:#fde68a,stroke:#b45309,color:#000
 ```
 
 ## Diagrammes d'activités / de séquence
