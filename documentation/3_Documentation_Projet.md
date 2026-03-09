@@ -554,7 +554,7 @@ Les diagrammes ont été modélisés dans Enterprise Architect et exportés dans
 
 ![img](./diagrammes/diagramme-activité-abonnementpng)
 
-### Feature : Envoi données du capteur de température au serveur 
+### Feature : Envoi données du capteur de température au serveur
 
 #### Diagramme de séquence
 
@@ -564,6 +564,15 @@ Les diagrammes ont été modélisés dans Enterprise Architect et exportés dans
 
 ![img](./diagrammes/diagramme_activite_envoi_temperatures.svg)
 
+### Feature : login
+
+#### Diagramme d'activité
+
+![img](./diagrammes/DiagrammeActivitr-login.drawio.png)
+
+#### Diagramme de séquence
+
+![img](./diagrammes/DiagrammeSequence-login.drawio.png)
 
 ## Maquettes
 
